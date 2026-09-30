@@ -15,6 +15,12 @@ Decky Manager non fa altro che preparare tutto questo e tenerlo in piedi.
 Se Steam si riavvia, il loader si riaggancia da solo: l'ordine di avvio fra
 Steam e loader è indifferente.
 
+## Lingua
+
+L'interfaccia è in italiano e in inglese. Al primo avvio segue la lingua di
+Windows; per cambiarla clicca **ITA** o **ENG** accanto al titolo: il pannello
+si riapre nella lingua scelta e la ricorda.
+
 ## Le tre spunte
 
 **Avvia Decky automaticamente all'accensione del PC**

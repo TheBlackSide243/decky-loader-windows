@@ -1,4 +1,4 @@
-**Download `DeckyManager.exe` below**, run it and press **Installa Decky**, then restart Steam.
+**Download `DeckyManager.exe` below**, run it and press **Install Decky**, then restart Steam.
 No installer, no admin rights, nothing else to install. Decky Loader itself is downloaded from its official CI.
 
 **Scarica `DeckyManager.exe` qui sotto**, aprilo e premi **Installa Decky**, poi riavvia Steam.

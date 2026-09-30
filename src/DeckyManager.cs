@@ -183,6 +183,127 @@ class Card : Panel
     }
 }
 
+// ------------------------------------------------------------ lingua
+// Testi dell'interfaccia: la chiave e' il testo italiano, cosi' qualsiasi
+// stringa non ancora tradotta ricade semplicemente sull'italiano.
+static class L
+{
+    public static bool En = false;
+
+    static readonly Dictionary<string, string> en = new Dictionary<string, string>
+    {
+        { "per Steam Big Picture su Windows", "for Steam Big Picture on Windows" },
+        { "STATO", "STATUS" },
+        { "Debug CEF (porta 8080)", "CEF debug (port 8080)" },
+        { "Server Decky (porta 1337)", "Decky server (port 1337)" },
+        { "File CEF in Steam", "CEF file in Steam" },
+        { "Plugin installati", "Installed plugins" },
+        { "VERSIONE", "VERSION" },
+        { "Installata", "Installed" },
+        { "Aggiornamenti", "Updates" },
+        { "Avvia Decky automaticamente all'accensione del PC", "Start Decky automatically when the PC boots" },
+        { "Avvia ridotto a icona nella barra di sistema", "Start minimised to the system tray" },
+        { "All'accensione parte anche questo pannello, nascosto vicino\nall'orologio: un clic sull'icona lo riapre.", "At boot this panel starts too, hidden near\nthe clock: click the icon to open it again." },
+        { "Aggiorna Decky da solo quando esce una versione nuova", "Update Decky automatically when a new version is out" },
+        { "Al momento dell'apertura, se esiste una versione piu' recente\nviene scaricata e installata da sola.\nNon lo fa mentre e' in corso un gioco.", "When the panel opens, a newer version is\ndownloaded and installed automatically.\nNever while a game is running." },
+        { "Installa Decky", "Install Decky" },
+        { "Installa Decky e prepara il PC.\nUsalo alla prima installazione o per reinstallare.", "Installs Decky and prepares the PC.\nUse it for the first install or to reinstall." },
+        { "Crea file CEF", "Create CEF file" },
+        { "Primo passo su un PC nuovo: abilita il debug CEF di Steam.\nSi disattiva da solo quando il file e' gia' presente.", "First step on a new PC: enables Steam's CEF debugger.\nDisabled automatically once the file exists." },
+        { "Avvia Decky", "Start Decky" },
+        { "Aggiorna ora", "Update now" },
+        { "Controlla aggiornamenti", "Check for updates" },
+        { "Apri cartella log", "Open log folder" },
+        { "Dopo un aggiornamento riavvia Steam per ricaricare l'interfaccia.", "After an update, restart Steam to reload the interface." },
+        { "Apri pannello", "Open panel" },
+        { "Ferma Decky", "Stop Decky" },
+        { "Chiudi pannello (Decky resta attivo)", "Close panel (Decky keeps running)" },
+        { "Risorsa mancante nell'eseguibile: ", "Resource missing from the executable: " },
+        { "versione ignota", "unknown version" },
+        { "In esecuzione", "Running" },
+        { "Fermo", "Stopped" },
+        { "NON INSTALLATO", "NOT INSTALLED" },
+        { "Chiuso", "Closed" },
+        { "Attivo", "Active" },
+        { "Non attivo", "Inactive" },
+        { "in attesa di Steam", "waiting for Steam" },
+        { "Occupata da un altro programma", "Used by another program" },
+        { "Libera", "Free" },
+        { "Presente", "Present" },
+        { "MANCANTE", "MISSING" },
+        { "Ricompila Decky dai sorgenti presenti su questo PC.", "Rebuilds Decky from the sources on this PC." },
+        { "Scarica e installa l'ultima versione ufficiale di Decky da GitHub.\nNon serve nient'altro: basta la connessione a internet.", "Downloads and installs the latest official Decky build from GitHub.\nNothing else needed: just an internet connection." },
+        { "nessuno", "none" },
+        { ")  -  compilata il ", ")  -  built on " },
+        { "sconosciuta  -  exe del ", "unknown  -  exe dated " },
+        { "controllo in corso...", "checking..." },
+        { "versione sconosciuta: premi Aggiorna ora", "unknown version: press Update now" },
+        { "controllo fallito (nessuna rete?)", "check failed (no network?)" },
+        { "non determinabile", "cannot be determined" },
+        { "AGGIORNAMENTO DISPONIBILE (", "UPDATE AVAILABLE (" },
+        { "aggiornato all'ultima versione", "up to date" },
+        { "exe piu' vecchio del sorgente: ricompila", "exe older than the sources: rebuild" },
+        { "Non trovo:\n", "Not found:\n" },
+        { "La porta 1337 e' occupata da un altro programma\n", "Port 1337 is used by another program\n" },
+        { "(spesso il servizio Razer Chroma SDK).\nDecky non puo' partire finche' non lo chiudi.", "(often the Razer Chroma SDK service).\nDecky cannot start until you close it." },
+        { "Porta occupata", "Port in use" },
+        { "Errore", "Error" },
+        { "Decky risulta gia' installato.\n\n", "Decky is already installed.\n\n" },
+        { "Scarico da GitHub l'ultima versione ufficiale di Decky per Windows\n(circa 30 MB) e la installo. Procedere?", "I will download the latest official Decky build for Windows from GitHub\n(about 30 MB) and install it. Continue?" },
+        { " installato in:\n", " installed in:\n" },
+        { "Installazione non riuscita:\n", "Installation failed:\n" },
+        { "Decky risulta gia' installato.\nVuoi reinstallare la versione contenuta in questo programma?", "Decky is already installed.\nReinstall the version bundled with this program?" },
+        { "Reinstalla Decky", "Reinstall Decky" },
+        { "Decky installato in:\n", "Decky installed in:\n" },
+        { "\nNon trovo la cartella di Steam: apri Steam almeno una volta.", "\nSteam folder not found: open Steam at least once." },
+        { "\nDebug CEF di Steam: gia' attivo.", "\nSteam CEF debugger: already enabled." },
+        { "\nDebug CEF di Steam: attivato.", "\nSteam CEF debugger: enabled." },
+        { "\nATTENZIONE: non ho potuto creare il file CEF nella cartella di Steam.\n", "\nWARNING: could not create the CEF file in the Steam folder.\n" },
+        { "Chiudi Steam e premi 'Crea file CEF', oppure riapri questo\n", "Close Steam and press 'Create CEF file', or reopen this\n" },
+        { "programma come amministratore.", "program as administrator." },
+        { "\nDecky avviato.", "\nDecky started." },
+        { "\nLa porta 1337 e' occupata: chiudi il programma che la usa.", "\nPort 1337 is in use: close the program using it." },
+        { "\n\nOra riavvia Steam completamente.", "\n\nNow restart Steam completely." },
+        { "Installazione completata", "Installation complete" },
+        { "Non trovo la cartella di Steam.", "Steam folder not found." },
+        { "File creato in:\n", "File created in:\n" },
+        { "\n\nRiavvia Steam completamente.", "\n\nRestart Steam completely." },
+        { "Fatto", "Done" },
+        { "Accesso negato.\nRiapri questo programma come amministratore, oppure crea a mano\n", "Access denied.\nReopen this program as administrator, or manually create\n" },
+        { "un file vuoto chiamato .cef-enable-remote-debugging in:\n", "an empty file named .cef-enable-remote-debugging in:\n" },
+        { "Servono i permessi", "Permission required" },
+        { "Verranno scaricati gli aggiornamenti e Decky verra' ricompilato.\n", "The latest sources will be downloaded and Decky rebuilt.\n" },
+        { "Servono alcuni minuti e il loader si chiude temporaneamente.\n\nProcedere?", "It takes a few minutes and the loader stops meanwhile.\n\nContinue?" },
+        { "Aggiorna Decky", "Update Decky" },
+        { "Aggiornamento...", "Updating..." },
+        { "Anche questo pannello e' stato rigenerato con la versione nuova\nincorporata dentro.\n\nLo riavvio adesso per usarla?", "This panel was rebuilt too, with the new version\nembedded.\n\nRestart it now to use it?" },
+        { "Pannello aggiornato", "Panel updated" },
+        { "scarico la build ufficiale... ", "downloading the official build... " },
+        { "cerco l'ultima build ufficiale...", "looking for the latest official build..." },
+        { "Nessuna build ufficiale trovata su GitHub.", "No official build found on GitHub." },
+        { "la build piu' recente e' scaduta, provo la precedente...", "the newest build has expired, trying the previous one..." },
+        { "Le build ufficiali recenti non sono piu' scaricabili da GitHub.", "The recent official builds can no longer be downloaded from GitHub." },
+        { "estraggo i file...", "extracting files..." },
+        { "L'archivio scaricato non contiene PluginLoader_noconsole.exe.", "The downloaded archive does not contain PluginLoader_noconsole.exe." },
+        { "installo...", "installing..." },
+        { "Scarico da GitHub l'ultima versione ufficiale di Decky per Windows\n(circa 30 MB) e la installo al posto di quella attuale.\n\nIl loader si chiude per un momento. Procedere?", "I will download the latest official Decky build for Windows from GitHub\n(about 30 MB) and install it over the current one.\n\nThe loader stops for a moment. Continue?" },
+        { "Decky aggiornato", "Decky updated" },
+        { "Installata la versione ", "Installed version " },
+        { ". Riavvia Steam per usarla.", ". Restart Steam to use it." },
+        { "Decky aggiornato a ", "Decky updated to " },
+        { ").\n\nRiavvia Steam per ricaricare l'interfaccia.", ").\n\nRestart Steam to reload the interface." },
+        { "Aggiornamento completato", "Update complete" },
+        { "aggiornamento automatico non riuscito", "automatic update failed" },
+        { "Aggiornamento non riuscito:\n", "Update failed:\n" },
+    };
+
+    public static string T(string it)
+    {
+        string e;
+        return (En && en.TryGetValue(it, out e)) ? e : it;
+    }
+}
+
 public class MainForm : Form
 {
     static readonly string Home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
@@ -197,9 +318,11 @@ public class MainForm : Form
     const string RunKey = "Software\\Microsoft\\Windows\\CurrentVersion\\Run";
     const string RunValue = "DeckyLoader";
     static readonly string AppDir = Path.GetDirectoryName(Application.ExecutablePath);
-    // Durante l'aggiornamento il file in esecuzione viene rinominato, quindi
-    // Application.ExecutablePath seguirebbe il vecchio file: qui serve il nome fisso.
-    static readonly string SelfPath = Path.Combine(AppDir, "DeckyManager.exe");
+    // Catturato all'avvio. Durante l'aggiornamento il file in esecuzione viene
+    // rinominato e Application.ExecutablePath, letto dopo, seguirebbe il file
+    // rinominato; qui resta il nome originale, qualunque sia (i browser salvano
+    // spesso "DeckyManager (1).exe").
+    static readonly string SelfPath = Application.ExecutablePath;
 
     Label lblLoader, lblSteam, lblCef8080, lblPort1337, lblCefFile, lblPlugins, lblVersion, lblUpdate;
     ThemedCheck chkAutostart;
@@ -279,10 +402,28 @@ public class MainForm : Form
         t1.AutoSize = true;
         t1.BackColor = Color.Transparent;
         t1.Margin = new Padding(0);
-        titles.Controls.Add(t1);
+        FlowLayoutPanel titleRow = new FlowLayoutPanel();
+        titleRow.FlowDirection = FlowDirection.LeftToRight;
+        titleRow.WrapContents = false;
+        titleRow.AutoSize = true;
+        titleRow.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+        titleRow.BackColor = Th.Bg;
+        titleRow.Margin = new Padding(0);
+        titles.Controls.Add(titleRow);
+        titleRow.Controls.Add(t1);
+        titleRow.Controls.Add(LinguaLink("ITA", "it"));
+        Label sep = new Label();
+        sep.Text = "|";
+        sep.AutoSize = true;
+        sep.BackColor = Color.Transparent;
+        sep.ForeColor = Th.Line;
+        sep.Font = new Font("Segoe UI", 8.5f);
+        sep.Margin = new Padding(0, 11, 0, 0);
+        titleRow.Controls.Add(sep);
+        titleRow.Controls.Add(LinguaLink("ENG", "en"));
 
         Label t2 = new Label();
-        t2.Text = "per Steam Big Picture su Windows";
+        t2.Text = L.T("per Steam Big Picture su Windows");
         t2.ForeColor = Th.Sub;
         t2.AutoSize = true;
         t2.BackColor = Color.Transparent;
@@ -290,56 +431,56 @@ public class MainForm : Form
         titles.Controls.Add(t2);
 
         // ---- card stato
-        TableLayoutPanel st = AddCard(root, "STATO");
+        TableLayoutPanel st = AddCard(root, L.T("STATO"));
         lblLoader   = AddRow(st, "Decky Loader");
         lblSteam    = AddRow(st, "Steam");
-        lblCef8080  = AddRow(st, "Debug CEF (porta 8080)");
-        lblPort1337 = AddRow(st, "Server Decky (porta 1337)");
-        lblCefFile  = AddRow(st, "File CEF in Steam");
-        lblPlugins  = AddRow(st, "Plugin installati");
+        lblCef8080  = AddRow(st, L.T("Debug CEF (porta 8080)"));
+        lblPort1337 = AddRow(st, L.T("Server Decky (porta 1337)"));
+        lblCefFile  = AddRow(st, L.T("File CEF in Steam"));
+        lblPlugins  = AddRow(st, L.T("Plugin installati"));
 
         // ---- card versione
-        TableLayoutPanel vt = AddCard(root, "VERSIONE");
-        lblVersion = AddRow(vt, "Installata");
-        lblUpdate  = AddRow(vt, "Aggiornamenti");
+        TableLayoutPanel vt = AddCard(root, L.T("VERSIONE"));
+        lblVersion = AddRow(vt, L.T("Installata"));
+        lblUpdate  = AddRow(vt, L.T("Aggiornamenti"));
 
         chkAutostart = new ThemedCheck();
-        chkAutostart.Text = "Avvia Decky automaticamente all'accensione del PC";
+        chkAutostart.Text = L.T("Avvia Decky automaticamente all'accensione del PC");
         chkAutostart.AutoSize = true;
         chkAutostart.Margin = new Padding(4, 16, 0, 2);
         chkAutostart.CheckedChanged += new EventHandler(OnAutostartToggled);
         root.Controls.Add(chkAutostart);
 
         chkTray = new ThemedCheck();
-        chkTray.Text = "Avvia ridotto a icona nella barra di sistema";
+        chkTray.Text = L.T("Avvia ridotto a icona nella barra di sistema");
         chkTray.AutoSize = true;
         chkTray.Margin = new Padding(28, 0, 0, 6);
         chkTray.CheckedChanged += new EventHandler(OnTrayOptionToggled);
-        tips.SetToolTip(chkTray, "All'accensione parte anche questo pannello, nascosto vicino\nall'orologio: un clic sull'icona lo riapre.");
+        tips.SetToolTip(chkTray, L.T("All'accensione parte anche questo pannello, nascosto vicino\nall'orologio: un clic sull'icona lo riapre."));
         root.Controls.Add(chkTray);
 
         chkAuto = new ThemedCheck();
-        chkAuto.Text = "Aggiorna Decky da solo quando esce una versione nuova";
+        chkAuto.Text = L.T("Aggiorna Decky da solo quando esce una versione nuova");
         chkAuto.AutoSize = true;
         chkAuto.Margin = new Padding(4, 0, 0, 12);
         chkAuto.CheckedChanged += new EventHandler(OnAutoUpdateToggled);
-        tips.SetToolTip(chkAuto, "Al momento dell'apertura, se esiste una versione piu' recente\nviene scaricata e installata da sola.\nNon lo fa mentre e' in corso un gioco.");
+        tips.SetToolTip(chkAuto, L.T("Al momento dell'apertura, se esiste una versione piu' recente\nviene scaricata e installata da sola.\nNon lo fa mentre e' in corso un gioco."));
         root.Controls.Add(chkAuto);
 
         FlowLayoutPanel row1 = AddButtonRow(root);
-        btnInstall = AddButton(row1, "Installa Decky", new EventHandler(OnInstall), false);
-        tips.SetToolTip(btnInstall, "Estrae Decky da questo programma e prepara il PC.\nUsalo alla prima installazione o per reinstallare.");
-        btnFixCef = AddButton(row1, "Crea file CEF", new EventHandler(OnFixCef), false);
-        tips.SetToolTip(btnFixCef, "Primo passo su un PC nuovo: abilita il debug CEF di Steam.\nSi disattiva da solo quando il file e' gia' presente.");
-        btnStartStop = AddButton(row1, "Avvia Decky", new EventHandler(OnStartStop), false);
+        btnInstall = AddButton(row1, L.T("Installa Decky"), new EventHandler(OnInstall), false);
+        tips.SetToolTip(btnInstall, L.T("Installa Decky e prepara il PC.\nUsalo alla prima installazione o per reinstallare."));
+        btnFixCef = AddButton(row1, L.T("Crea file CEF"), new EventHandler(OnFixCef), false);
+        tips.SetToolTip(btnFixCef, L.T("Primo passo su un PC nuovo: abilita il debug CEF di Steam.\nSi disattiva da solo quando il file e' gia' presente."));
+        btnStartStop = AddButton(row1, L.T("Avvia Decky"), new EventHandler(OnStartStop), false);
 
         FlowLayoutPanel row2 = AddButtonRow(root);
-        btnUpdate = AddButton(row2, "Aggiorna ora", new EventHandler(OnUpdate), false);
-        AddButton(row2, "Controlla aggiornamenti", new EventHandler(OnRefresh), false);
-        AddButton(row2, "Apri cartella log", new EventHandler(OnLogs), false);
+        btnUpdate = AddButton(row2, L.T("Aggiorna ora"), new EventHandler(OnUpdate), false);
+        AddButton(row2, L.T("Controlla aggiornamenti"), new EventHandler(OnRefresh), false);
+        AddButton(row2, L.T("Apri cartella log"), new EventHandler(OnLogs), false);
 
         Label hint = new Label();
-        hint.Text = "Dopo un aggiornamento riavvia Steam per ricaricare l'interfaccia.";
+        hint.Text = L.T("Dopo un aggiornamento riavvia Steam per ricaricare l'interfaccia.");
         hint.ForeColor = Th.Sub;
         hint.BackColor = Color.Transparent;
         hint.AutoSize = true;
@@ -360,6 +501,9 @@ public class MainForm : Form
             if (!AutostartEnabled() || !AutostartIsTrayMode()) return;
             string target = ShortcutTarget(StartupLnk);
             if (string.Equals(target, SelfPath, StringComparison.OrdinalIgnoreCase)) return;
+            // se punta a un'altra copia che esiste ancora, e' una scelta dell'utente:
+            // si interviene solo quando il file e' sparito (cartella spostata o rinominata)
+            if (target.Length > 0 && File.Exists(target)) return;
             CreateShortcut(StartupLnk, SelfPath, AppDir, "--minimized");
         }
         catch { }
@@ -385,12 +529,12 @@ public class MainForm : Form
         try { tray.Icon = Icon; } catch { }
         tray.Text = "Decky Loader";
         ContextMenuStrip menu = new ContextMenuStrip();
-        ToolStripMenuItem miOpen = new ToolStripMenuItem("Apri pannello");
+        ToolStripMenuItem miOpen = new ToolStripMenuItem(L.T("Apri pannello"));
         miOpen.Click += new EventHandler(OnTrayOpen);
         miToggleLoader = new ToolStripMenuItem(
-            LoaderProcesses().Length > 0 ? "Ferma Decky" : "Avvia Decky");
+            LoaderProcesses().Length > 0 ? L.T("Ferma Decky") : L.T("Avvia Decky"));
         miToggleLoader.Click += new EventHandler(OnStartStop);
-        ToolStripMenuItem miExit = new ToolStripMenuItem("Chiudi pannello (Decky resta attivo)");
+        ToolStripMenuItem miExit = new ToolStripMenuItem(L.T("Chiudi pannello (Decky resta attivo)"));
         miExit.Click += new EventHandler(OnTrayExit);
         menu.Items.Add(miOpen);
         menu.Items.Add(new ToolStripSeparator());
@@ -455,6 +599,40 @@ public class MainForm : Form
                 DwmSetWindowAttribute(Handle, 19, ref on, 4);
         }
         catch { }
+    }
+
+    Label LinguaLink(string testo, string codice)
+    {
+        bool attiva = (L.En ? "en" : "it") == codice;
+        Label l = new Label();
+        l.Text = testo;
+        l.AutoSize = true;
+        l.BackColor = Color.Transparent;
+        l.Font = new Font("Segoe UI", 8.5f, attiva ? FontStyle.Bold : FontStyle.Regular);
+        l.ForeColor = attiva ? Th.Accent : Th.Sub;
+        l.Margin = new Padding(codice == "it" ? 16 : 0, 11, 0, 0);
+        if (!attiva)
+        {
+            l.Cursor = Cursors.Hand;
+            l.MouseEnter += delegate { l.ForeColor = Th.Text; };
+            l.MouseLeave += delegate { l.ForeColor = Th.Sub; };
+            l.Click += delegate { CambiaLingua(codice); };
+        }
+        return l;
+    }
+
+    // La lingua si applica alla costruzione della finestra: si salva e si riapre.
+    void CambiaLingua(string codice)
+    {
+        WriteSetting("Language", codice);
+        try
+        {
+            Process.Start(new ProcessStartInfo(SelfPath) { WorkingDirectory = AppDir, UseShellExecute = true });
+        }
+        catch (Exception ex) { MessageBox.Show(this, ex.Message, L.T("Errore")); return; }
+        if (tray != null) { tray.Visible = false; tray.Dispose(); tray = null; }
+        trayEnabled = false;
+        Application.Exit();
     }
 
     TableLayoutPanel AddCard(FlowLayoutPanel parent, string header)
@@ -647,28 +825,41 @@ public class MainForm : Form
         return false;
     }
 
-    static bool ReadAutoUpdate()
+    static string ReadSetting(string key, string def)
     {
         try
         {
             if (File.Exists(SettingsFile))
                 foreach (string l in File.ReadAllLines(SettingsFile))
-                    if (l.StartsWith("AutoUpdate="))
-                        return l.Substring(11).Trim() == "1";
+                    if (l.StartsWith(key + "="))
+                        return l.Substring(key.Length + 1).Trim();
         }
         catch { }
-        return true; // acceso di serie: cosi' resta aggiornato da solo
+        return def;
     }
 
-    static void WriteAutoUpdate(bool v)
+    static void WriteSetting(string key, string val)
     {
         try
         {
             Directory.CreateDirectory(Path.GetDirectoryName(SettingsFile));
-            File.WriteAllText(SettingsFile, "AutoUpdate=" + (v ? "1" : "0") + Environment.NewLine);
+            List<string> righe = new List<string>();
+            bool trovata = false;
+            if (File.Exists(SettingsFile))
+                foreach (string l in File.ReadAllLines(SettingsFile))
+                {
+                    if (l.StartsWith(key + "=")) { righe.Add(key + "=" + val); trovata = true; }
+                    else if (l.Trim().Length > 0) righe.Add(l);
+                }
+            if (!trovata) righe.Add(key + "=" + val);
+            File.WriteAllLines(SettingsFile, righe.ToArray());
         }
         catch { }
     }
+
+    // acceso di serie: cosi' resta aggiornato da solo
+    static bool ReadAutoUpdate() { return ReadSetting("AutoUpdate", "1") == "1"; }
+    static void WriteAutoUpdate(bool v) { WriteSetting("AutoUpdate", v ? "1" : "0"); }
 
     void OnAutoUpdateToggled(object s, EventArgs e)
     {
@@ -702,7 +893,7 @@ public class MainForm : Form
     {
         using (Stream st = Assembly.GetExecutingAssembly().GetManifestResourceStream(name))
         {
-            if (st == null) throw new Exception("Risorsa mancante nell'eseguibile: " + name);
+            if (st == null) throw new Exception(L.T("Risorsa mancante nell'eseguibile: ") + name);
             using (FileStream f = new FileStream(destPath, FileMode.Create, FileAccess.Write))
             {
                 byte[] buf = new byte[81920];
@@ -738,7 +929,7 @@ public class MainForm : Form
             if (raw.Length == 0) return null;
             string[] parts = raw.Split('|');
             if (parts.Length < 2) return null;
-            if (parts[0].Length == 0) parts[0] = "versione ignota";
+            if (parts[0].Length == 0) parts[0] = L.T("versione ignota");
             return parts;
         }
         catch { return null; }
@@ -748,44 +939,44 @@ public class MainForm : Form
     {
         bool running = LoaderProcesses().Length > 0;
         bool installed = LoaderInstalled();
-        if (running) Set(lblLoader, true, "In esecuzione");
-        else if (installed) Set(lblLoader, false, "Fermo");
-        else Set(lblLoader, false, "NON INSTALLATO");
-        btnStartStop.Text = running ? "Ferma Decky" : "Avvia Decky";
+        if (running) Set(lblLoader, true, L.T("In esecuzione"));
+        else if (installed) Set(lblLoader, false, L.T("Fermo"));
+        else Set(lblLoader, false, L.T("NON INSTALLATO"));
+        btnStartStop.Text = running ? L.T("Ferma Decky") : L.T("Avvia Decky");
         btnStartStop.Enabled = installed;
         btnInstall.Primary = !installed;
         btnInstall.Invalidate();
-        if (miToggleLoader != null) miToggleLoader.Text = running ? "Ferma Decky" : "Avvia Decky";
+        if (miToggleLoader != null) miToggleLoader.Text = running ? L.T("Ferma Decky") : L.T("Avvia Decky");
 
         bool steam = Process.GetProcessesByName("steam").Length > 0;
-        Set(lblSteam, steam, steam ? "In esecuzione" : "Chiuso");
+        Set(lblSteam, steam, steam ? L.T("In esecuzione") : L.T("Chiuso"));
 
         bool cef = PortInUse(8080);
-        if (cef) Set(lblCef8080, true, "Attivo");
-        else if (steam) Set(lblCef8080, false, "Non attivo");
-        else SetNeutral(lblCef8080, "in attesa di Steam");
+        if (cef) Set(lblCef8080, true, L.T("Attivo"));
+        else if (steam) Set(lblCef8080, false, L.T("Non attivo"));
+        else SetNeutral(lblCef8080, L.T("in attesa di Steam"));
 
         bool p1337 = PortInUse(1337);
-        if (running && p1337) Set(lblPort1337, true, "Attivo");
-        else if (!running && p1337) Set(lblPort1337, false, "Occupata da un altro programma");
-        else SetNeutral(lblPort1337, "Libera");
+        if (running && p1337) Set(lblPort1337, true, L.T("Attivo"));
+        else if (!running && p1337) Set(lblPort1337, false, L.T("Occupata da un altro programma"));
+        else SetNeutral(lblPort1337, L.T("Libera"));
 
         string cefFile = CefFilePath();
         bool hasCef = cefFile != null && File.Exists(cefFile);
-        Set(lblCefFile, hasCef, hasCef ? "Presente" : "MANCANTE");
+        Set(lblCefFile, hasCef, hasCef ? L.T("Presente") : L.T("MANCANTE"));
         btnFixCef.Enabled = !hasCef;
         btnFixCef.Primary = !hasCef;
         bool canBuild = CanBuild();
         btnUpdate.Enabled = true;
         tips.SetToolTip(btnUpdate, canBuild
-            ? "Ricompila Decky dai sorgenti presenti su questo PC."
-            : "Scarica e installa l'ultima versione ufficiale di Decky da GitHub.\nNon serve nient'altro: basta la connessione a internet.");
+            ? L.T("Ricompila Decky dai sorgenti presenti su questo PC.")
+            : L.T("Scarica e installa l'ultima versione ufficiale di Decky da GitHub.\nNon serve nient'altro: basta la connessione a internet."));
         btnFixCef.Invalidate();
 
         try
         {
             string[] dirs = Directory.Exists(PluginsDir) ? Directory.GetDirectories(PluginsDir) : new string[0];
-            if (dirs.Length == 0) SetNeutral(lblPlugins, "nessuno");
+            if (dirs.Length == 0) SetNeutral(lblPlugins, L.T("nessuno"));
             else
             {
                 string names = "";
@@ -809,8 +1000,8 @@ public class MainForm : Form
         string date = File.Exists(ExeNoConsole)
             ? File.GetLastWriteTime(ExeNoConsole).ToString("dd/MM/yyyy") : "?";
         string[] bi = ReadBuildInfo();
-        if (bi != null) SetNeutral(lblVersion, bi[0] + " (" + Short(bi[1]) + ")  -  compilata il " + date);
-        else SetNeutral(lblVersion, "sconosciuta  -  exe del " + date);
+        if (bi != null) SetNeutral(lblVersion, bi[0] + " (" + Short(bi[1]) + L.T(")  -  compilata il ") + date);
+        else SetNeutral(lblVersion, L.T("sconosciuta  -  exe del ") + date);
 
         EqualizeCards();
     }
@@ -880,7 +1071,7 @@ public class MainForm : Form
 
     void CheckUpdatesWorker()
     {
-        SetUpdateLabel("controllo in corso...", Th.Sub);
+        SetUpdateLabel(L.T("controllo in corso..."), Th.Sub);
         string repo = RepoPath();
         bool canBuild = CanBuild();
         string[] built = ReadBuildInfo();
@@ -892,7 +1083,7 @@ public class MainForm : Form
         else if (repo != null) local = Git(repo, "rev-parse HEAD");
         else
         {
-            SetUpdateLabel("versione sconosciuta: premi Aggiorna ora", Th.Sub, true);
+            SetUpdateLabel(L.T("versione sconosciuta: premi Aggiorna ora"), Th.Sub, true);
             return;
         }
         string remote = "";
@@ -912,15 +1103,15 @@ public class MainForm : Form
         }
         catch
         {
-            SetUpdateLabel("controllo fallito (nessuna rete?)", Th.Sub);
+            SetUpdateLabel(L.T("controllo fallito (nessuna rete?)"), Th.Sub);
             return;
         }
 
-        if (local == "" || remote == "") { SetUpdateLabel("non determinabile", Th.Sub); return; }
+        if (local == "" || remote == "") { SetUpdateLabel(L.T("non determinabile"), Th.Sub); return; }
 
         if (local != remote)
         {
-            SetUpdateLabel("AGGIORNAMENTO DISPONIBILE (" + Short(remote) + ")", Th.Warn, true);
+            SetUpdateLabel(L.T("AGGIORNAMENTO DISPONIBILE (") + Short(remote) + ")", Th.Warn, true);
             // aggiornamento automatico: solo se richiesto, non mentre si gioca
             if (ReadAutoUpdate() && !updating && !GiocoInCorso())
             {
@@ -930,10 +1121,10 @@ public class MainForm : Form
         }
         if (built != null)
         {
-            SetUpdateLabel("aggiornato all'ultima versione", Th.Good);
+            SetUpdateLabel(L.T("aggiornato all'ultima versione"), Th.Good);
             return;
         }
-        if (repo == null) { SetUpdateLabel("aggiornato all'ultima versione", Th.Good); return; }
+        if (repo == null) { SetUpdateLabel(L.T("aggiornato all'ultima versione"), Th.Good); return; }
 
         bool stale = false;
         try
@@ -944,8 +1135,8 @@ public class MainForm : Form
                 stale = File.GetLastWriteTime(ExeNoConsole) < commit;
         }
         catch { }
-        if (stale) SetUpdateLabel("exe piu' vecchio del sorgente: ricompila", Th.Warn, true);
-        else SetUpdateLabel("aggiornato all'ultima versione", Th.Good);
+        if (stale) SetUpdateLabel(L.T("exe piu' vecchio del sorgente: ricompila"), Th.Warn, true);
+        else SetUpdateLabel(L.T("aggiornato all'ultima versione"), Th.Good);
     }
 
     void SetUpdateLabel(string text, Color c) { SetUpdateLabel(text, c, false); }
@@ -972,12 +1163,12 @@ public class MainForm : Form
         }
         else
         {
-            if (!File.Exists(ExeNoConsole)) { MessageBox.Show(this, "Non trovo:\n" + ExeNoConsole, "Decky"); return; }
+            if (!File.Exists(ExeNoConsole)) { MessageBox.Show(this, L.T("Non trovo:\n") + ExeNoConsole, "Decky"); return; }
             if (PortInUse(1337))
             {
-                MessageBox.Show(this, "La porta 1337 e' occupata da un altro programma\n" +
-                    "(spesso il servizio Razer Chroma SDK).\nDecky non puo' partire finche' non lo chiudi.",
-                    "Porta occupata", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show(this, L.T("La porta 1337 e' occupata da un altro programma\n") +
+                    L.T("(spesso il servizio Razer Chroma SDK).\nDecky non puo' partire finche' non lo chiudi."),
+                    L.T("Porta occupata"), MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
             try
@@ -988,7 +1179,7 @@ public class MainForm : Form
                 Process.Start(si);
                 Thread.Sleep(2500);
             }
-            catch (Exception ex) { MessageBox.Show(this, ex.Message, "Errore"); }
+            catch (Exception ex) { MessageBox.Show(this, ex.Message, L.T("Errore")); }
         }
         RefreshStatus();
     }
@@ -1017,7 +1208,7 @@ public class MainForm : Form
                 RemoveRunKey();
             }
         }
-        catch (Exception ex) { MessageBox.Show(this, ex.Message, "Errore"); }
+        catch (Exception ex) { MessageBox.Show(this, ex.Message, L.T("Errore")); }
         RefreshStatus();
     }
 
@@ -1033,7 +1224,7 @@ public class MainForm : Form
     {
         if (suppressToggle) return;
         try { if (chkAutostart.Checked) ApplyAutostart(); }
-        catch (Exception ex) { MessageBox.Show(this, ex.Message, "Errore"); }
+        catch (Exception ex) { MessageBox.Show(this, ex.Message, L.T("Errore")); }
         RefreshStatus();
         if (tray != null) tray.Visible = true;
     }
@@ -1102,9 +1293,9 @@ public class MainForm : Form
             // Build "leggera": i binari di Decky non sono inclusi, si prendono
             // dalla CI ufficiale del progetto.
             if (MessageBox.Show(this,
-                (already ? "Decky risulta gia' installato.\n\n" : "") +
-                "Scarico da GitHub l'ultima versione ufficiale di Decky per Windows\n(circa 30 MB) e la installo. Procedere?",
-                "Installa Decky", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes) return;
+                (already ? L.T("Decky risulta gia' installato.\n\n") : "") +
+                L.T("Scarico da GitHub l'ultima versione ufficiale di Decky per Windows\n(circa 30 MB) e la installo. Procedere?"),
+                L.T("Installa Decky"), MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes) return;
 
             btnInstall.Enabled = false;
             StartThread(delegate
@@ -1116,7 +1307,7 @@ public class MainForm : Form
                     Invoke(new MethodInvoker(delegate
                     {
                         btnInstall.Enabled = true;
-                        CompletaInstallazione("Decky " + tag + " installato in:\n" + ServicesDir + "\n");
+                        CompletaInstallazione("Decky " + tag + L.T(" installato in:\n") + ServicesDir + "\n");
                     }));
                 }
                 catch (Exception ex)
@@ -1125,7 +1316,7 @@ public class MainForm : Form
                     {
                         btnInstall.Enabled = true;
                         RefreshStatus();
-                        MessageBox.Show(this, "Installazione non riuscita:\n" + ex.Message, "Errore",
+                        MessageBox.Show(this, L.T("Installazione non riuscita:\n") + ex.Message, L.T("Errore"),
                             MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }));
                 }
@@ -1134,8 +1325,8 @@ public class MainForm : Form
         }
 
         if (already && MessageBox.Show(this,
-            "Decky risulta gia' installato.\nVuoi reinstallare la versione contenuta in questo programma?",
-            "Reinstalla Decky", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes) return;
+            L.T("Decky risulta gia' installato.\nVuoi reinstallare la versione contenuta in questo programma?"),
+            L.T("Reinstalla Decky"), MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes) return;
 
         string esito = "";
         try
@@ -1151,11 +1342,11 @@ public class MainForm : Form
             ExtractResource("loader_console", Path.Combine(ServicesDir, "PluginLoader.exe"));
             string bi = EmbeddedBuildInfo();
             if (bi.Length > 0) File.WriteAllText(BuildInfo, bi);
-            esito += "Decky installato in:\n" + ServicesDir + "\n";
+            esito += L.T("Decky installato in:\n") + ServicesDir + "\n";
         }
         catch (Exception ex)
         {
-            MessageBox.Show(this, "Installazione non riuscita:\n" + ex.Message, "Errore",
+            MessageBox.Show(this, L.T("Installazione non riuscita:\n") + ex.Message, L.T("Errore"),
                 MessageBoxButtons.OK, MessageBoxIcon.Error);
             RefreshStatus();
             return;
@@ -1168,14 +1359,14 @@ public class MainForm : Form
     void CompletaInstallazione(string esito)
     {
         string cef = CefFilePath();
-        if (cef == null) esito += "\nNon trovo la cartella di Steam: apri Steam almeno una volta.";
-        else if (File.Exists(cef)) esito += "\nDebug CEF di Steam: gia' attivo.";
+        if (cef == null) esito += L.T("\nNon trovo la cartella di Steam: apri Steam almeno una volta.");
+        else if (File.Exists(cef)) esito += L.T("\nDebug CEF di Steam: gia' attivo.");
         else
         {
-            try { File.WriteAllText(cef, ""); esito += "\nDebug CEF di Steam: attivato."; }
-            catch { esito += "\nATTENZIONE: non ho potuto creare il file CEF nella cartella di Steam.\n" +
-                             "Chiudi Steam e premi 'Crea file CEF', oppure riapri questo\n" +
-                             "programma come amministratore."; }
+            try { File.WriteAllText(cef, ""); esito += L.T("\nDebug CEF di Steam: attivato."); }
+            catch { esito += L.T("\nATTENZIONE: non ho potuto creare il file CEF nella cartella di Steam.\n") +
+                             L.T("Chiudi Steam e premi 'Crea file CEF', oppure riapri questo\n") +
+                             L.T("programma come amministratore."); }
         }
 
         if (!PortInUse(1337))
@@ -1187,34 +1378,34 @@ public class MainForm : Form
                 si.UseShellExecute = false;
                 Process.Start(si);
                 Thread.Sleep(2500);
-                esito += "\nDecky avviato.";
+                esito += L.T("\nDecky avviato.");
             }
             catch { }
         }
-        else esito += "\nLa porta 1337 e' occupata: chiudi il programma che la usa.";
+        else esito += L.T("\nLa porta 1337 e' occupata: chiudi il programma che la usa.");
 
-        esito += "\n\nOra riavvia Steam completamente.";
+        esito += L.T("\n\nOra riavvia Steam completamente.");
         RefreshStatus();
         StartThread(CheckUpdatesWorker);
-        MessageBox.Show(this, esito, "Installazione completata", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        MessageBox.Show(this, esito, L.T("Installazione completata"), MessageBoxButtons.OK, MessageBoxIcon.Information);
     }
 
     void OnFixCef(object s, EventArgs e)
     {
         string f = CefFilePath();
-        if (f == null) { MessageBox.Show(this, "Non trovo la cartella di Steam.", "Decky"); return; }
+        if (f == null) { MessageBox.Show(this, L.T("Non trovo la cartella di Steam."), "Decky"); return; }
         try
         {
             File.WriteAllText(f, "");
-            MessageBox.Show(this, "File creato in:\n" + f + "\n\nRiavvia Steam completamente.", "Fatto");
+            MessageBox.Show(this, L.T("File creato in:\n") + f + L.T("\n\nRiavvia Steam completamente."), L.T("Fatto"));
         }
         catch (UnauthorizedAccessException)
         {
-            MessageBox.Show(this, "Accesso negato.\nRiapri questo programma come amministratore, oppure crea a mano\n" +
-                "un file vuoto chiamato .cef-enable-remote-debugging in:\n" + Path.GetDirectoryName(f),
-                "Servono i permessi", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            MessageBox.Show(this, L.T("Accesso negato.\nRiapri questo programma come amministratore, oppure crea a mano\n") +
+                L.T("un file vuoto chiamato .cef-enable-remote-debugging in:\n") + Path.GetDirectoryName(f),
+                L.T("Servono i permessi"), MessageBoxButtons.OK, MessageBoxIcon.Warning);
         }
-        catch (Exception ex) { MessageBox.Show(this, ex.Message, "Errore"); }
+        catch (Exception ex) { MessageBox.Show(this, ex.Message, L.T("Errore")); }
         RefreshStatus();
     }
 
@@ -1225,7 +1416,7 @@ public class MainForm : Form
             if (!Directory.Exists(LogsDir)) Directory.CreateDirectory(LogsDir);
             Process.Start("explorer.exe", "\"" + LogsDir + "\"");
         }
-        catch (Exception ex) { MessageBox.Show(this, ex.Message, "Errore"); }
+        catch (Exception ex) { MessageBox.Show(this, ex.Message, L.T("Errore")); }
     }
 
     void OnUpdate(object s, EventArgs e)
@@ -1233,13 +1424,13 @@ public class MainForm : Form
         string bat = BuildScript();
         if (!CanBuild() || bat == null) { OnlineUpdate(); return; }
         if (MessageBox.Show(this,
-            "Verranno scaricati gli aggiornamenti e Decky verra' ricompilato.\n" +
-            "Servono alcuni minuti e il loader si chiude temporaneamente.\n\nProcedere?",
-            "Aggiorna Decky", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes) return;
+            L.T("Verranno scaricati gli aggiornamenti e Decky verra' ricompilato.\n") +
+            L.T("Servono alcuni minuti e il loader si chiude temporaneamente.\n\nProcedere?"),
+            L.T("Aggiorna Decky"), MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes) return;
 
         updating = true;
         btnUpdate.Enabled = false;
-        btnUpdate.Text = "Aggiornamento...";
+        btnUpdate.Text = L.T("Aggiornamento...");
         DateTime selfBefore = DateTime.MinValue;
         try { selfBefore = File.GetLastWriteTime(SelfPath); } catch { }
         StartThread(delegate
@@ -1254,20 +1445,20 @@ public class MainForm : Form
             }
             catch (Exception ex)
             {
-                Invoke(new MethodInvoker(delegate { MessageBox.Show(this, ex.Message, "Errore"); }));
+                Invoke(new MethodInvoker(delegate { MessageBox.Show(this, ex.Message, L.T("Errore")); }));
             }
             Invoke(new MethodInvoker(delegate
             {
                 btnUpdate.Enabled = true;
-                btnUpdate.Text = "Aggiorna ora";
+                btnUpdate.Text = L.T("Aggiorna ora");
                 RefreshStatus();
                 DateTime selfAfter = DateTime.MinValue;
                 try { selfAfter = File.GetLastWriteTime(SelfPath); } catch { }
                 if (selfBefore != DateTime.MinValue && selfAfter > selfBefore)
                 {
                     if (MessageBox.Show(this,
-                        "Anche questo pannello e' stato rigenerato con la versione nuova\nincorporata dentro.\n\nLo riavvio adesso per usarla?",
-                        "Pannello aggiornato", MessageBoxButtons.YesNo, MessageBoxIcon.Information) == DialogResult.Yes)
+                        L.T("Anche questo pannello e' stato rigenerato con la versione nuova\nincorporata dentro.\n\nLo riavvio adesso per usarla?"),
+                        L.T("Pannello aggiornato"), MessageBoxButtons.YesNo, MessageBoxIcon.Information) == DialogResult.Yes)
                     {
                         try
                         {
@@ -1277,7 +1468,7 @@ public class MainForm : Form
                             Application.Exit();
                             return;
                         }
-                        catch (Exception ex2) { MessageBox.Show(this, ex2.Message, "Errore"); }
+                        catch (Exception ex2) { MessageBox.Show(this, ex2.Message, L.T("Errore")); }
                     }
                 }
             }));
@@ -1321,7 +1512,7 @@ public class MainForm : Form
                 if (total > 0)
                 {
                     int pct = (int)(done * 100 / total);
-                    if (pct != last) { last = pct; SetUpdateLabel("scarico la build ufficiale... " + pct + "%", Th.Sub); }
+                    if (pct != last) { last = pct; SetUpdateLabel(L.T("scarico la build ufficiale... ") + pct + "%", Th.Sub); }
                 }
             }
         }
@@ -1338,19 +1529,19 @@ public class MainForm : Form
         string tmp = null;
         try
         {
-            SetUpdateLabel("cerco l'ultima build ufficiale...", Th.Sub);
+            SetUpdateLabel(L.T("cerco l'ultima build ufficiale..."), Th.Sub);
             // Gli artefatti di GitHub scadono dopo ~90 giorni: si scorrono le
             // build recenti finche' se ne trova una ancora scaricabile.
             string runs = HttpGet("https://api.github.com/repos/SteamDeckHomebrew/decky-loader/actions/workflows/build-win.yml/runs?branch=main&status=success&per_page=20");
             MatchCollection corse = Regex.Matches(runs,
                 "\"id\"\\s*:\\s*(\\d+),\\s*\"name\"\\s*:\\s*\"Builder Win\".*?\"head_sha\"\\s*:\\s*\"([0-9a-f]{40})\"",
                 RegexOptions.Singleline);
-            if (corse.Count == 0) throw new Exception("Nessuna build ufficiale trovata su GitHub.");
+            if (corse.Count == 0) throw new Exception(L.T("Nessuna build ufficiale trovata su GitHub."));
 
             string artId = "";
             for (int i = 0; i < corse.Count && artId == ""; i++)
             {
-                if (i > 0) SetUpdateLabel("la build piu' recente e' scaduta, provo la precedente...", Th.Sub);
+                if (i > 0) SetUpdateLabel(L.T("la build piu' recente e' scaduta, provo la precedente..."), Th.Sub);
                 try
                 {
                     string arts = HttpGet("https://api.github.com/repos/SteamDeckHomebrew/decky-loader/actions/runs/" + corse[i].Groups[1].Value + "/artifacts");
@@ -1363,7 +1554,7 @@ public class MainForm : Form
                 }
                 catch { }
             }
-            if (artId == "") throw new Exception("Le build ufficiali recenti non sono piu' scaricabili da GitHub.");
+            if (artId == "") throw new Exception(L.T("Le build ufficiali recenti non sono piu' scaricabili da GitHub."));
 
             string tag = "main";
             try
@@ -1378,14 +1569,14 @@ public class MainForm : Form
             string zip = Path.Combine(tmp, "loader.zip");
             DownloadFile("https://nightly.link/SteamDeckHomebrew/decky-loader/actions/artifacts/" + artId + ".zip", zip);
 
-            SetUpdateLabel("estraggo i file...", Th.Sub);
+            SetUpdateLabel(L.T("estraggo i file..."), Th.Sub);
             string ext = Path.Combine(tmp, "estratto");
             System.IO.Compression.ZipFile.ExtractToDirectory(zip, ext);
             string srcNo = Path.Combine(ext, "PluginLoader_noconsole.exe");
             string srcCo = Path.Combine(ext, "PluginLoader.exe");
-            if (!File.Exists(srcNo)) throw new Exception("L'archivio scaricato non contiene PluginLoader_noconsole.exe.");
+            if (!File.Exists(srcNo)) throw new Exception(L.T("L'archivio scaricato non contiene PluginLoader_noconsole.exe."));
 
-            SetUpdateLabel("installo...", Th.Sub);
+            SetUpdateLabel(L.T("installo..."), Th.Sub);
             foreach (Process pr in LoaderProcesses()) { try { pr.Kill(); } catch { } }
             Thread.Sleep(2500);
             Directory.CreateDirectory(ServicesDir);
@@ -1406,11 +1597,11 @@ public class MainForm : Form
     {
         if (updating) return;
         if (!silenzioso && MessageBox.Show(this,
-            "Scarico da GitHub l'ultima versione ufficiale di Decky per Windows\n(circa 30 MB) e la installo al posto di quella attuale.\n\nIl loader si chiude per un momento. Procedere?",
-            "Aggiorna Decky", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes) return;
+            L.T("Scarico da GitHub l'ultima versione ufficiale di Decky per Windows\n(circa 30 MB) e la installo al posto di quella attuale.\n\nIl loader si chiude per un momento. Procedere?"),
+            L.T("Aggiorna Decky"), MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes) return;
 
         btnUpdate.Enabled = false;
-        btnUpdate.Text = "Aggiornamento...";
+        btnUpdate.Text = L.T("Aggiornamento...");
         StartThread(delegate
         {
             try
@@ -1424,20 +1615,20 @@ public class MainForm : Form
                 {
                     updating = false;
                     btnUpdate.Enabled = true;
-                    btnUpdate.Text = "Aggiorna ora";
+                    btnUpdate.Text = L.T("Aggiorna ora");
                     RefreshStatus();
                     if (silenzioso)
                     {
                         if (tray != null)
                         {
-                            tray.BalloonTipTitle = "Decky aggiornato";
-                            tray.BalloonTipText = "Installata la versione " + tag + ". Riavvia Steam per usarla.";
+                            tray.BalloonTipTitle = L.T("Decky aggiornato");
+                            tray.BalloonTipText = L.T("Installata la versione ") + tag + L.T(". Riavvia Steam per usarla.");
                             tray.ShowBalloonTip(8000);
                         }
                     }
                     else MessageBox.Show(this,
-                        "Decky aggiornato a " + tag + " (" + Short(sha) + ").\n\nRiavvia Steam per ricaricare l'interfaccia.",
-                        "Aggiornamento completato", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        L.T("Decky aggiornato a ") + tag + " (" + Short(sha) + L.T(").\n\nRiavvia Steam per ricaricare l'interfaccia."),
+                        L.T("Aggiornamento completato"), MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }));
                 CheckUpdatesWorker();
             }
@@ -1447,11 +1638,11 @@ public class MainForm : Form
                 {
                     updating = false;
                     btnUpdate.Enabled = true;
-                    btnUpdate.Text = "Aggiorna ora";
+                    btnUpdate.Text = L.T("Aggiorna ora");
                     RefreshStatus();
-                    if (silenzioso) SetUpdateLabel("aggiornamento automatico non riuscito", Th.Warn, true);
-                    else MessageBox.Show(this, "Aggiornamento non riuscito:\n" + ex.Message,
-                        "Errore", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    if (silenzioso) SetUpdateLabel(L.T("aggiornamento automatico non riuscito"), Th.Warn, true);
+                    else MessageBox.Show(this, L.T("Aggiornamento non riuscito:\n") + ex.Message,
+                        L.T("Errore"), MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }));
             }
         });
@@ -1487,6 +1678,12 @@ public class MainForm : Form
 
         // avviato dal boot: fa partire il loader al posto della vecchia scorciatoia
         if (minimized) StartLoaderIfNeeded();
+
+        // lingua: scelta salvata, altrimenti quella di Windows
+        string lingua = ReadSetting("Language", "auto");
+        if (lingua != "it" && lingua != "en")
+            lingua = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "it" ? "it" : "en";
+        L.En = (lingua == "en");
 
         Application.Run(new MainForm(minimized));
     }

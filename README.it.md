@@ -10,6 +10,8 @@ Niente Python, niente Node, niente Git, nessun installer: un solo `.exe` che fa 
 
 ![Decky Manager](docs/screenshot.png)
 
+> L'interfaccia è in **italiano** e **inglese**: segue la lingua di Windows e si cambia quando vuoi con **ITA | ENG** accanto al titolo.
+>
 > La guida completa, con tutti i dettagli e la disinstallazione, è in [docs/GUIDA-IT.md](docs/GUIDA-IT.md).
 
 ---
@@ -49,7 +51,7 @@ Non chiede mai i permessi di amministratore. Unica eccezione: se Steam è in `Pr
 
 * **Avvia Decky automaticamente all'accensione del PC** — aggiunge una scorciatoia nella cartella Esecuzione automatica di Windows.
 * **Avvia ridotto a icona nella barra di sistema** — all'accensione parte il pannello stesso, nascosto vicino all'orologio, e avvia lui il loader. Clic sinistro sull'icona per aprirlo, clic destro per il menu. Su Windows 11 le icone nuove finiscono nel riquadro delle *icone nascoste* sotto la freccetta `^`: trascinala sulla barra per tenerla sempre in vista.
-* **Aggiorna Decky da solo** — attiva di serie. A ogni apertura, se esiste una versione più recente, la scarica e la installa senza chiedere nulla, avvisandoti con un fumetto sull'icona. Non lo fa mai mentre è in corso un gioco.
+* **Aggiorna Decky da solo quando esce una versione nuova** — attiva di serie. A ogni apertura, se esiste una versione più recente, la scarica e la installa senza chiedere nulla, avvisandoti con un fumetto sull'icona. Non lo fa mai mentre è in corso un gioco.
 
 ## Come funziona
 
