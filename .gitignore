@@ -1,0 +1,15 @@
+# build output
+*.exe
+*.pdb
+*.old.exe
+
+# Decky Loader binaries used by -Embed builds.
+# They are GPL-2.0 and belong to SteamDeckHomebrew: never commit them here.
+src/payload/
+
+# editors / OS
+.vs/
+.idea/
+*.user
+Thumbs.db
+desktop.ini
