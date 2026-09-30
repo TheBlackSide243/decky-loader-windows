@@ -1,6 +1,6 @@
 # Guida completa (italiano)
 
-Manuale d'uso di Decky Manager. Per la panoramica breve vedi il [README](../README.md).
+Manuale d'uso di Decky Manager. Per la panoramica breve vedi il [README](../README.it.md).
 
 ## Come funziona, in breve
 
