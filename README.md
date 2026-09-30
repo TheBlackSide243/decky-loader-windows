@@ -69,7 +69,7 @@ Produces a ~30 MB build with the Decky loader binaries embedded as resources, so
 
 ## Licensing
 
-Decky Manager is MIT licensed (see [LICENSE](LICENSE)).
+Decky Manager is MIT licensed (see [LICENSE](LICENSE) and [NOTICE.md](NOTICE.md)).
 
 **Decky Loader is a separate project, licensed GPL-2.0.** This repository contains none of its code and ships none of its binaries: released builds download them from the project's own CI at install time. If you produce an embedded build with `-Embed`, you are redistributing GPL-2.0 binaries and take on the obligations that come with it — including making the corresponding source available. Keep those builds to yourself unless you are prepared to comply.
 
