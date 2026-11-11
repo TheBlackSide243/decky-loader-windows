@@ -63,15 +63,15 @@ non è nel percorso classico.
 
 ## Aggiornamenti
 
-Il pannello chiede a GitHub qual è l'ultima build Windows andata a buon fine
-nella CI di Decky Loader e la confronta con quella installata, leggendo
-`build-info.txt`. Se serve, scarica l'archivio degli artefatti tramite
-[nightly.link](https://nightly.link) — che li serve senza bisogno di account —
-lo estrae, sostituisce gli eseguibili e riavvia il loader.
+Il pannello chiede a GitHub qual è l'ultima release ufficiale di Decky Loader
+e ne confronta la versione con quella installata, leggendo `build-info.txt`.
+Se serve, scarica dalla release gli eseguibili Windows già pronti, ne controlla
+lo SHA-256, ferma il loader, sostituisce i file e lo riavvia. Se qualcosa va
+storto, la versione installata resta com'era.
 
-GitHub conserva gli artefatti circa 90 giorni. Se quelli della build più
-recente non ci sono più, il pannello scorre a ritroso le ultime venti build
-finché ne trova una ancora scaricabile.
+L'aggiornamento automatico parte al massimo una volta ogni 6 ore e mai durante
+un gioco. Il pannello si apre una sola volta: riaprirlo porta in primo piano
+quello già attivo. Gli errori finiscono in `homebrew\logs\decky-manager.log`.
 
 Se accanto all'exe metti `build-from-source.bat` (lo trovi in `tools/`) e hai
 Git, Node e Python installati, il pulsante "Aggiorna ora" compila invece Decky

@@ -5,7 +5,7 @@ title Decky Loader - build from source
 rem ---------------------------------------------------------------------
 rem  OPTIONAL. Most people never need this file: Decky Manager installs
 rem  and updates Decky by downloading the official Windows build from the
-rem  Decky Loader CI.
+rem  Decky Loader GitHub releases.
 rem
 rem  Use this only if you want to compile Decky Loader yourself.
 rem  Requirements: Git, Node 20 + pnpm, Python 3.11 + Poetry.

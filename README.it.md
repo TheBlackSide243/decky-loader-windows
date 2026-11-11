@@ -20,7 +20,7 @@ Niente Python, niente Node, niente Git, nessun installer: un solo `.exe` che fa 
 
 | | |
 |---|---|
-| **Installa Decky** | Scarica la build ufficiale per Windows direttamente dalla CI di Decky Loader e la sistema in `%USERPROFILE%\homebrew`. |
+| **Installa Decky** | Scarica la build ufficiale per Windows direttamente dalle release di Decky Loader e la sistema in `%USERPROFILE%\homebrew`. |
 | **Attiva il debugger di Steam** | Crea il file `.cef-enable-remote-debugging` nella cartella di Steam: è l'interruttore che permette a Decky di agganciarsi a Big Picture. |
 | **Stato in tempo reale** | Loader, Steam, porte 8080 e 1337, file CEF e plugin installati, tutto a colpo d'occhio. |
 | **Avvia e ferma** | Lancia il loader con la cartella di lavoro corretta, oppure lo ferma. |
@@ -61,9 +61,11 @@ L'interfaccia di Steam è un'applicazione Chromium (CEF). Con il file `.cef-enab
 
 ## Aggiornamenti
 
-A ogni apertura il pannello chiede al repository di Decky Loader qual è l'ultima build Windows riuscita nella CI e la confronta con quella installata.
+A ogni apertura il pannello chiede a GitHub qual è l'ultima **release ufficiale di Decky Loader** e ne confronta la versione con quella installata (`build-info.txt`).
 
-GitHub conserva gli artefatti della CI per circa 90 giorni. Se i file della build più recente non ci sono più, il pannello scorre a ritroso le ultime venti build finché ne trova una ancora scaricabile. I download passano da [nightly.link](https://nightly.link), che serve gli artefatti di GitHub Actions senza bisogno di account.
+Da v3.3.0 ogni release di Decky contiene gli eseguibili Windows già pronti (`PluginLoader-win.exe` e `PluginLoader-win-noconsole.exe`, più quelli ARM64, che il pannello sceglie da solo sui PC ARM). Il pannello li scarica direttamente dalla release, controlla lo SHA-256 che GitHub pubblica per ogni file e solo dopo ferma il loader, sostituisce i file e lo riavvia. Se qualcosa va storto, la versione installata resta com'era e il loader viene riavviato.
+
+L'aggiornamento automatico parte al massimo una volta ogni 6 ore, mai mentre è in corso un gioco, e il pannello può essere aperto una sola volta: riaprirlo porta semplicemente in primo piano la finestra già attiva. Gli errori finiscono in `%USERPROFILE%\homebrew\logs\decky-manager.log`.
 
 ## Problemi frequenti
 
@@ -92,7 +94,7 @@ Genera una versione da ~30 MB con dentro i binari del loader di Decky, così pu�
 
 Decky Manager è distribuito con licenza MIT (vedi [LICENSE](LICENSE) e [NOTICE.md](NOTICE.md)).
 
-**Decky Loader è un progetto separato, con licenza GPL-2.0.** Questo repository non contiene nulla del suo codice e le release non includono i suoi binari: vengono scaricati dalla sua CI al momento dell'installazione. Se costruisci una versione con `-Embed`, stai ridistribuendo binari GPL-2.0 e te ne assumi gli obblighi, compreso rendere disponibile il codice sorgente corrispondente.
+**Decky Loader è un progetto separato, con licenza GPL-2.0.** Questo repository non contiene nulla del suo codice e le release non includono i suoi binari: vengono scaricati dalle sue release ufficiali al momento dell'installazione. Se costruisci una versione con `-Embed`, stai ridistribuendo binari GPL-2.0 e te ne assumi gli obblighi, compreso rendere disponibile il codice sorgente corrispondente.
 
 ## Ringraziamenti
 

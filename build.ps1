@@ -52,8 +52,7 @@ $refs = @(
     'System.Drawing.dll'
     'System.Windows.Forms.dll'
     'System.Core.dll'
-    (Join-Path $fw 'System.IO.Compression.FileSystem.dll')
-    (Join-Path $fw 'System.IO.Compression.dll')
+    (Join-Path $fw 'System.Web.Extensions.dll')
 ) -join ','
 
 $cscArgs = @(

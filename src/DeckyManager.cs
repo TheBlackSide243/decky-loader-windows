@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -8,8 +9,10 @@ using System.Net;
 using System.Net.NetworkInformation;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 using System.Text.RegularExpressions;
 using System.Threading;
+using System.Web.Script.Serialization;
 using System.Windows.Forms;
 using Microsoft.Win32;
 
@@ -236,13 +239,13 @@ static class L
         { "nessuno", "none" },
         { ")  -  compilata il ", ")  -  built on " },
         { "sconosciuta  -  exe del ", "unknown  -  exe dated " },
+        { "  -  installata il ", "  -  installed on " },
         { "controllo in corso...", "checking..." },
-        { "versione sconosciuta: premi Aggiorna ora", "unknown version: press Update now" },
         { "controllo fallito (nessuna rete?)", "check failed (no network?)" },
-        { "non determinabile", "cannot be determined" },
+        { "limite di richieste GitHub raggiunto: riprova tra un'ora", "GitHub request limit reached: try again in an hour" },
+        { "ultima versione disponibile: ", "latest version available: " },
         { "AGGIORNAMENTO DISPONIBILE (", "UPDATE AVAILABLE (" },
         { "aggiornato all'ultima versione", "up to date" },
-        { "exe piu' vecchio del sorgente: ricompila", "exe older than the sources: rebuild" },
         { "Non trovo:\n", "Not found:\n" },
         { "La porta 1337 e' occupata da un altro programma\n", "Port 1337 is used by another program\n" },
         { "(spesso il servizio Razer Chroma SDK).\nDecky non puo' partire finche' non lo chiudi.", "(often the Razer Chroma SDK service).\nDecky cannot start until you close it." },
@@ -280,18 +283,16 @@ static class L
         { "Pannello aggiornato", "Panel updated" },
         { "scarico la build ufficiale... ", "downloading the official build... " },
         { "cerco l'ultima build ufficiale...", "looking for the latest official build..." },
-        { "Nessuna build ufficiale trovata su GitHub.", "No official build found on GitHub." },
-        { "la build piu' recente e' scaduta, provo la precedente...", "the newest build has expired, trying the previous one..." },
-        { "Le build ufficiali recenti non sono piu' scaricabili da GitHub.", "The recent official builds can no longer be downloaded from GitHub." },
-        { "estraggo i file...", "extracting files..." },
-        { "L'archivio scaricato non contiene PluginLoader_noconsole.exe.", "The downloaded archive does not contain PluginLoader_noconsole.exe." },
+        { "L'ultima release di Decky non contiene la versione per Windows.", "The latest Decky release has no Windows build." },
+        { "Il file scaricato non e' un eseguibile valido.", "The downloaded file is not a valid executable." },
+        { "Il file scaricato e' danneggiato (controllo SHA-256 fallito).", "The downloaded file is corrupted (SHA-256 check failed)." },
         { "installo...", "installing..." },
         { "Scarico da GitHub l'ultima versione ufficiale di Decky per Windows\n(circa 30 MB) e la installo al posto di quella attuale.\n\nIl loader si chiude per un momento. Procedere?", "I will download the latest official Decky build for Windows from GitHub\n(about 30 MB) and install it over the current one.\n\nThe loader stops for a moment. Continue?" },
         { "Decky aggiornato", "Decky updated" },
         { "Installata la versione ", "Installed version " },
         { ". Riavvia Steam per usarla.", ". Restart Steam to use it." },
         { "Decky aggiornato a ", "Decky updated to " },
-        { ").\n\nRiavvia Steam per ricaricare l'interfaccia.", ").\n\nRestart Steam to reload the interface." },
+        { ".\n\nRiavvia Steam per ricaricare l'interfaccia.", ".\n\nRestart Steam to reload the interface." },
         { "Aggiornamento completato", "Update complete" },
         { "aggiornamento automatico non riuscito", "automatic update failed" },
         { "Aggiornamento non riuscito:\n", "Update failed:\n" },
@@ -328,7 +329,9 @@ public class MainForm : Form
     ThemedCheck chkAutostart;
     ThemedCheck chkTray;
     ThemedCheck chkAuto;
-    bool updating = false;
+    volatile bool updating = false;
+    int checking = 0;                              // 1 mentre un controllo e' in corso
+    DateTime lastAutoAttempt = DateTime.MinValue;  // ultimo aggiornamento automatico tentato
     NotifyIcon tray;
     ToolStripMenuItem miToggleLoader;
     bool startHidden = false;
@@ -340,6 +343,32 @@ public class MainForm : Form
 
     [DllImport("dwmapi.dll")]
     static extern int DwmSetWindowAttribute(IntPtr hwnd, int attr, ref int value, int size);
+
+    // Istanza singola: una seconda copia segnala questo evento alla prima, che
+    // si mostra, e poi si chiude; cosi' due pannelli non aggiornano e fermano
+    // Decky insieme.
+    const string ShowEventName = "Local\\DeckyManager.Show";
+    static EventWaitHandle showEvent;
+
+    void ListenForShowRequests()
+    {
+        if (showEvent == null) return;
+        Thread t = new Thread(delegate()
+        {
+            try
+            {
+                while (true)
+                {
+                    showEvent.WaitOne();
+                    if (IsDisposed) return;
+                    UI(delegate { OnTrayOpen(this, EventArgs.Empty); });
+                }
+            }
+            catch { }
+        });
+        t.IsBackground = true;
+        t.Start();
+    }
 
     public MainForm(bool minimized)
     {
@@ -489,7 +518,8 @@ public class MainForm : Form
 
         SelfHealAutostart();
         RefreshStatus();
-        StartThread(CheckUpdatesWorker);
+        // il controllo aggiornamenti parte in OnShown: qui la finestra non ha
+        // ancora un handle e il thread toccherebbe i controlli dal thread sbagliato
     }
 
     // Se l'avvio automatico lancia questo pannello ma la cartella e' stata
@@ -574,6 +604,8 @@ public class MainForm : Form
     {
         base.OnShown(e);
         if (startHidden) { Hide(); ShowInTaskbar = false; }
+        ListenForShowRequests();
+        StartThread(CheckUpdatesWorker);
     }
 
     protected override void OnFormClosing(FormClosingEventArgs e)
@@ -627,6 +659,7 @@ public class MainForm : Form
         WriteSetting("Language", codice);
         try
         {
+            LiberaIstanza();
             Process.Start(new ProcessStartInfo(SelfPath) { WorkingDirectory = AppDir, UseShellExecute = true });
         }
         catch (Exception ex) { MessageBox.Show(this, ex.Message, L.T("Errore")); return; }
@@ -775,18 +808,6 @@ public class MainForm : Form
     {
         string s = SteamPath();
         return s == null ? null : Path.Combine(s, ".cef-enable-remote-debugging");
-    }
-
-    static string RepoPath()
-    {
-        string[] candidates = new string[] {
-            Path.Combine(Home, "decky-loader"),
-            Path.Combine(AppDir, "decky-loader"),
-            Path.Combine(Path.Combine(Home, "Desktop"), "decky-loader")
-        };
-        foreach (string c in candidates)
-            if (Directory.Exists(Path.Combine(c, ".git"))) return c;
-        return null;
     }
 
     static string ShortcutTarget(string lnkPath)
@@ -1000,7 +1021,8 @@ public class MainForm : Form
         string date = File.Exists(ExeNoConsole)
             ? File.GetLastWriteTime(ExeNoConsole).ToString("dd/MM/yyyy") : "?";
         string[] bi = ReadBuildInfo();
-        if (bi != null) SetNeutral(lblVersion, bi[0] + " (" + Short(bi[1]) + L.T(")  -  compilata il ") + date);
+        if (bi != null && bi[1].Length >= 7) SetNeutral(lblVersion, bi[0] + " (" + Short(bi[1]) + L.T(")  -  compilata il ") + date);
+        else if (bi != null) SetNeutral(lblVersion, bi[0] + L.T("  -  installata il ") + date);
         else SetNeutral(lblVersion, L.T("sconosciuta  -  exe del ") + date);
 
         EqualizeCards();
@@ -1026,129 +1048,146 @@ public class MainForm : Form
         return gitCache == 1;
     }
 
-    // Questo PC puo' ricompilare Decky? Serve git e lo script di aggiornamento.
-    // Percorso dello script opzionale che compila Decky dai sorgenti.
-    // Se non c'e', si usa il download dalla CI ufficiale.
+    // Script opzionale che compila Decky dai sorgenti (tools\build-from-source.bat
+    // messo accanto all'exe). Se non c'e', si usa la release ufficiale.
     static string BuildScript()
     {
-        string[] nomi = new string[] { "build-from-source.bat", "Decky-Updater.bat" };
-        foreach (string n in nomi)
-        {
-            string f = Path.Combine(AppDir, n);
-            if (File.Exists(f)) return f;
-        }
-        return null;
+        string f = Path.Combine(AppDir, "build-from-source.bat");
+        return File.Exists(f) ? f : null;
     }
 
     static bool CanBuild()
     {
-        return GitAvailable() && BuildScript() != null;
+        return BuildScript() != null && GitAvailable();
     }
 
-    static string Git(string repo, string args)
+    static readonly string LogFile = Path.Combine(LogsDir, "decky-manager.log");
+
+    static void Log(string msg)
     {
         try
         {
-            ProcessStartInfo si = new ProcessStartInfo("git", "-C \"" + repo + "\" " + args);
-            si.UseShellExecute = false;
-            si.RedirectStandardOutput = true;
-            si.RedirectStandardError = true;
-            si.CreateNoWindow = true;
-            Process p = Process.Start(si);
-            string outp = p.StandardOutput.ReadToEnd().Trim();
-            p.WaitForExit(15000);
-            return outp;
+            Directory.CreateDirectory(LogsDir);
+            File.AppendAllText(LogFile, DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + "  " + msg + Environment.NewLine);
         }
-        catch { return ""; }
+        catch { }
+    }
+
+    // Esegue sul thread dell'interfaccia; non fa nulla se la finestra non esiste
+    // (ancora o piu'), invece di lanciare eccezioni dal thread in background.
+    void UI(MethodInvoker m)
+    {
+        try
+        {
+            if (IsDisposed || !IsHandleCreated) return;
+            if (InvokeRequired) Invoke(m); else m();
+        }
+        catch (ObjectDisposedException) { }
+        catch (InvalidOperationException ex) { Log("UI: " + ex.Message); }
     }
 
     void StartThread(ThreadStart work)
     {
-        Thread t = new Thread(work);
+        Thread t = new Thread(delegate()
+        {
+            try { work(); }
+            catch (Exception ex) { Log("errore nel thread: " + ex); }
+        });
         t.IsBackground = true;
         t.Start();
     }
 
     void CheckUpdatesWorker()
     {
-        SetUpdateLabel(L.T("controllo in corso..."), Th.Sub);
-        string repo = RepoPath();
-        bool canBuild = CanBuild();
-        string[] built = ReadBuildInfo();
+        // un solo controllo alla volta (apertura dal tray + pulsante, ecc.)
+        if (Interlocked.Exchange(ref checking, 1) == 1) return;
+        try { CheckUpdatesCore(); }
+        finally { Interlocked.Exchange(ref checking, 0); }
+    }
 
-        // Senza sorgenti si puo' comunque dire se la build installata e'
-        // aggiornata, purche' build-info.txt sia arrivato con gli exe.
-        string local = "";
-        if (built != null) local = built[1];
-        else if (repo != null) local = Git(repo, "rev-parse HEAD");
-        else
+    // Confronta la versione installata (build-info.txt) con l'ultima release
+    // ufficiale di Decky. Dopo un aggiornamento le due coincidono per forza,
+    // quindi l'aggiornamento automatico non puo' piu' ripetersi all'infinito.
+    void CheckUpdatesCore()
+    {
+        if (updating) return;
+        SetUpdateLabel(L.T("controllo in corso..."), Th.Sub);
+
+        ReleaseInfo rel;
+        try { rel = LatestRelease(); }
+        catch (WebException ex)
         {
-            SetUpdateLabel(L.T("versione sconosciuta: premi Aggiorna ora"), Th.Sub, true);
+            HttpWebResponse r = ex.Response as HttpWebResponse;
+            bool limite = r != null && ((int)r.StatusCode == 403 || (int)r.StatusCode == 429);
+            Log("controllo aggiornamenti: " + ex.Message);
+            SetUpdateLabel(limite ? L.T("limite di richieste GitHub raggiunto: riprova tra un'ora")
+                                  : L.T("controllo fallito (nessuna rete?)"), Th.Sub);
             return;
         }
-        string remote = "";
-        try
+        catch (Exception ex)
         {
-            ServicePointManager.SecurityProtocol = (SecurityProtocolType)3072;
-            HttpWebRequest req = (HttpWebRequest)WebRequest.Create(
-                "https://api.github.com/repos/SteamDeckHomebrew/decky-loader/commits/main");
-            req.UserAgent = "DeckyManager";
-            req.Timeout = 15000;
-            using (WebResponse res = req.GetResponse())
-            using (StreamReader sr = new StreamReader(res.GetResponseStream()))
-            {
-                Match m = Regex.Match(sr.ReadToEnd(), "\"sha\"\\s*:\\s*\"([0-9a-f]{40})\"");
-                if (m.Success) remote = m.Groups[1].Value;
-            }
-        }
-        catch
-        {
+            Log("controllo aggiornamenti: " + ex.Message);
             SetUpdateLabel(L.T("controllo fallito (nessuna rete?)"), Th.Sub);
             return;
         }
 
-        if (local == "" || remote == "") { SetUpdateLabel(L.T("non determinabile"), Th.Sub); return; }
+        // non installato: il pulsante "Installa Decky" e' gia' quello evidenziato
+        if (!LoaderInstalled()) { SetUpdateLabel(L.T("ultima versione disponibile: ") + rel.Tag, Th.Sub); return; }
 
-        if (local != remote)
+        string[] built = ReadBuildInfo();
+        string local = built != null ? built[0] : "";
+        if (IsUpToDate(local, rel.Tag))
         {
-            SetUpdateLabel(L.T("AGGIORNAMENTO DISPONIBILE (") + Short(remote) + ")", Th.Warn, true);
-            // aggiornamento automatico: solo se richiesto, non mentre si gioca
-            if (ReadAutoUpdate() && !updating && !GiocoInCorso())
-            {
-                Invoke(new MethodInvoker(delegate { OnlineUpdate(true); }));
-            }
+            SetUpdateLabel(L.T("aggiornato all'ultima versione") + " (" + rel.Tag + ")", Th.Good);
             return;
         }
-        if (built != null)
-        {
-            SetUpdateLabel(L.T("aggiornato all'ultima versione"), Th.Good);
-            return;
-        }
-        if (repo == null) { SetUpdateLabel(L.T("aggiornato all'ultima versione"), Th.Good); return; }
 
-        bool stale = false;
-        try
+        SetUpdateLabel(L.T("AGGIORNAMENTO DISPONIBILE (") + rel.Tag + ")", Th.Warn, true);
+
+        // aggiornamento automatico: solo se richiesto, non mentre si gioca e al
+        // massimo un tentativo ogni 6 ore, cosi' un errore non diventa un ciclo
+        if (ReadAutoUpdate() && !updating && !GiocoInCorso()
+            && (DateTime.Now - lastAutoAttempt).TotalHours >= 6)
         {
-            string iso = Git(repo, "log -1 --format=%cI");
-            DateTime commit;
-            if (DateTime.TryParse(iso, out commit) && File.Exists(ExeNoConsole))
-                stale = File.GetLastWriteTime(ExeNoConsole) < commit;
+            lastAutoAttempt = DateTime.Now;
+            UI(delegate { OnlineUpdate(true); });
         }
-        catch { }
-        if (stale) SetUpdateLabel(L.T("exe piu' vecchio del sorgente: ricompila"), Th.Warn, true);
-        else SetUpdateLabel(L.T("aggiornato all'ultima versione"), Th.Good);
+    }
+
+    // "v3.3.1" -> {3, 3, 1, 1}; "v3.3.1-pre1" -> {3, 3, 1, 0}; null se non e' una versione
+    static int[] ParseVersion(string tag)
+    {
+        Match m = Regex.Match((tag ?? "").Trim(), "^v?(\\d+)\\.(\\d+)\\.(\\d+)(-\\S+)?$");
+        if (!m.Success) return null;
+        return new int[] {
+            int.Parse(m.Groups[1].Value), int.Parse(m.Groups[2].Value),
+            int.Parse(m.Groups[3].Value), m.Groups[4].Success ? 0 : 1 };
+    }
+
+    // true se la versione installata e' uguale o piu' recente dell'ultima release
+    // (una build compilata dai sorgenti puo' essere piu' avanti: non va sovrascritta)
+    static bool IsUpToDate(string local, string latest)
+    {
+        if (string.Equals((local ?? "").Trim(), latest, StringComparison.OrdinalIgnoreCase)) return true;
+        int[] a = ParseVersion(local), b = ParseVersion(latest);
+        if (a == null || b == null) return false;
+        for (int i = 0; i < a.Length; i++)
+            if (a[i] != b[i]) return a[i] > b[i];
+        return true;
     }
 
     void SetUpdateLabel(string text, Color c) { SetUpdateLabel(text, c, false); }
 
     void SetUpdateLabel(string text, Color c, bool needsUpdate)
     {
-        if (InvokeRequired) { Invoke(new MethodInvoker(delegate { SetUpdateLabel(text, c, needsUpdate); })); return; }
-        btnUpdate.Primary = needsUpdate;
-        btnUpdate.Invalidate();
-        lblUpdate.Text = text;
-        lblUpdate.ForeColor = c;
-        EqualizeCards();
+        UI(delegate
+        {
+            btnUpdate.Primary = needsUpdate;
+            btnUpdate.Invalidate();
+            lblUpdate.Text = text;
+            lblUpdate.ForeColor = c;
+            EqualizeCards();
+        });
     }
 
     void OnRefresh(object s, EventArgs e) { RefreshStatus(); StartThread(CheckUpdatesWorker); }
@@ -1156,11 +1195,7 @@ public class MainForm : Form
     void OnStartStop(object s, EventArgs e)
     {
         Process[] procs = LoaderProcesses();
-        if (procs.Length > 0)
-        {
-            foreach (Process p in procs) { try { p.Kill(); } catch { } }
-            Thread.Sleep(1500);
-        }
+        if (procs.Length > 0) StopLoader();
         else
         {
             if (!File.Exists(ExeNoConsole)) { MessageBox.Show(this, L.T("Non trovo:\n") + ExeNoConsole, "Decky"); return; }
@@ -1297,28 +1332,35 @@ public class MainForm : Form
                 L.T("Scarico da GitHub l'ultima versione ufficiale di Decky per Windows\n(circa 30 MB) e la installo. Procedere?"),
                 L.T("Installa Decky"), MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes) return;
 
+            if (updating) return;
+            updating = true;
             btnInstall.Enabled = false;
+            btnUpdate.Enabled = false;
             StartThread(delegate
             {
                 try
                 {
-                    string sha;
-                    string tag = ScaricaLoaderUfficiali(out sha);
-                    Invoke(new MethodInvoker(delegate
+                    string tag = InstallaReleaseUfficiale();
+                    UI(delegate
                     {
+                        updating = false;
                         btnInstall.Enabled = true;
+                        btnUpdate.Enabled = true;
                         CompletaInstallazione("Decky " + tag + L.T(" installato in:\n") + ServicesDir + "\n");
-                    }));
+                    });
                 }
                 catch (Exception ex)
                 {
-                    Invoke(new MethodInvoker(delegate
+                    Log("installazione: " + ex);
+                    UI(delegate
                     {
+                        updating = false;
                         btnInstall.Enabled = true;
+                        btnUpdate.Enabled = true;
                         RefreshStatus();
                         MessageBox.Show(this, L.T("Installazione non riuscita:\n") + ex.Message, L.T("Errore"),
                             MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }));
+                    });
                 }
             });
             return;
@@ -1331,8 +1373,7 @@ public class MainForm : Form
         string esito = "";
         try
         {
-            foreach (Process p in LoaderProcesses()) { try { p.Kill(); } catch { } }
-            Thread.Sleep(1500);
+            StopLoader();
 
             string hb = Path.Combine(Home, "homebrew");
             string[] dirs = new string[] { "services", "plugins", "settings", "logs", "data", "themes" };
@@ -1421,6 +1462,7 @@ public class MainForm : Form
 
     void OnUpdate(object s, EventArgs e)
     {
+        if (updating) return;
         string bat = BuildScript();
         if (!CanBuild() || bat == null) { OnlineUpdate(); return; }
         if (MessageBox.Show(this,
@@ -1445,10 +1487,11 @@ public class MainForm : Form
             }
             catch (Exception ex)
             {
-                Invoke(new MethodInvoker(delegate { MessageBox.Show(this, ex.Message, L.T("Errore")); }));
+                UI(delegate { MessageBox.Show(this, ex.Message, L.T("Errore")); });
             }
-            Invoke(new MethodInvoker(delegate
+            UI(delegate
             {
+                updating = false;
                 btnUpdate.Enabled = true;
                 btnUpdate.Text = L.T("Aggiorna ora");
                 RefreshStatus();
@@ -1462,6 +1505,7 @@ public class MainForm : Form
                     {
                         try
                         {
+                            LiberaIstanza();
                             Process.Start(new ProcessStartInfo(SelfPath) { WorkingDirectory = AppDir, UseShellExecute = true });
                             if (tray != null) { tray.Visible = false; tray.Dispose(); tray = null; }
                             trayEnabled = false;
@@ -1471,7 +1515,7 @@ public class MainForm : Form
                         catch (Exception ex2) { MessageBox.Show(this, ex2.Message, L.T("Errore")); }
                     }
                 }
-            }));
+            });
             CheckUpdatesWorker();
         });
     }
@@ -1518,72 +1562,144 @@ public class MainForm : Form
         }
     }
 
-    // Aggiornamento senza compilatore: scarica gli eseguibili gia' pronti dalla
-    // CI ufficiale di Decky. Funziona su qualsiasi PC, serve solo internet.
-    // Scarica dalla CI ufficiale di Decky gli eseguibili gia' pronti e li installa
-    // in homebrew\services. Usato sia dall'aggiornamento sia dalla prima
-    // installazione quando l'exe non porta i binari incorporati.
-    string ScaricaLoaderUfficiali(out string sha)
+    // ---------------------------------------- release ufficiali di Decky
+    // Da v3.3.0 Decky pubblica gli exe per Windows come asset delle release
+    // GitHub: niente artefatti CI che scadono, niente servizi esterni, e il
+    // nome della versione installata coincide con quello della release.
+    class ReleaseInfo
     {
-        sha = "";
+        public string Tag = "";
+        public string UrlNoConsole = "", UrlConsole = "";
+        public string DigestNoConsole = "", DigestConsole = "";
+    }
+
+    static bool IsArm64()
+    {
+        string a = Environment.GetEnvironmentVariable("PROCESSOR_ARCHITEW6432");
+        if (string.IsNullOrEmpty(a)) a = Environment.GetEnvironmentVariable("PROCESSOR_ARCHITECTURE");
+        return a != null && a.ToUpperInvariant() == "ARM64";
+    }
+
+    static string Str(Dictionary<string, object> d, string key)
+    {
+        object v;
+        return (d != null && d.TryGetValue(key, out v) && v != null) ? Convert.ToString(v) : "";
+    }
+
+    static ReleaseInfo LatestRelease()
+    {
+        string json = HttpGet("https://api.github.com/repos/SteamDeckHomebrew/decky-loader/releases/latest");
+        JavaScriptSerializer js = new JavaScriptSerializer();
+        js.MaxJsonLength = int.MaxValue;
+        Dictionary<string, object> rel = js.Deserialize<Dictionary<string, object>>(json);
+
+        ReleaseInfo r = new ReleaseInfo();
+        r.Tag = Str(rel, "tag_name");
+        string prefix = IsArm64() ? "PluginLoader-win-arm64" : "PluginLoader-win";
+        object assets;
+        if (rel.TryGetValue("assets", out assets) && assets is IEnumerable)
+        {
+            foreach (object o in (IEnumerable)assets)
+            {
+                Dictionary<string, object> a = o as Dictionary<string, object>;
+                string name = Str(a, "name");
+                if (name == prefix + "-noconsole.exe")
+                {
+                    r.UrlNoConsole = Str(a, "browser_download_url");
+                    r.DigestNoConsole = Str(a, "digest");
+                }
+                else if (name == prefix + ".exe")
+                {
+                    r.UrlConsole = Str(a, "browser_download_url");
+                    r.DigestConsole = Str(a, "digest");
+                }
+            }
+        }
+        if (r.Tag == "" || r.UrlNoConsole == "")
+            throw new Exception(L.T("L'ultima release di Decky non contiene la versione per Windows."));
+        return r;
+    }
+
+    // Scarica e controlla che sia un exe integro (intestazione MZ + SHA-256
+    // pubblicato da GitHub, quando presente).
+    void DownloadVerified(string url, string dest, string digest)
+    {
+        DownloadFile(url, dest);
+        using (FileStream f = File.OpenRead(dest))
+        {
+            if (f.Length < 1024 * 1024 || f.ReadByte() != 'M' || f.ReadByte() != 'Z')
+                throw new Exception(L.T("Il file scaricato non e' un eseguibile valido."));
+            if (digest.StartsWith("sha256:", StringComparison.OrdinalIgnoreCase))
+            {
+                f.Position = 0;
+                byte[] h;
+                using (SHA256 sha = SHA256.Create()) h = sha.ComputeHash(f);
+                string hex = BitConverter.ToString(h).Replace("-", "").ToLowerInvariant();
+                if (hex != digest.Substring(7).ToLowerInvariant())
+                    throw new Exception(L.T("Il file scaricato e' danneggiato (controllo SHA-256 fallito)."));
+            }
+        }
+    }
+
+    // Chiude il loader e aspetta davvero che i processi siano usciti, altrimenti
+    // gli exe restano bloccati e la copia fallisce.
+    static void StopLoader()
+    {
+        foreach (Process p in LoaderProcesses()) { try { p.Kill(); } catch { } }
+        foreach (Process p in LoaderProcesses()) { try { p.WaitForExit(10000); } catch { } }
+        Thread.Sleep(500);
+    }
+
+    static void CopyWithRetry(string src, string dst)
+    {
+        for (int i = 0; ; i++)
+        {
+            try { File.Copy(src, dst, true); return; }
+            catch (Exception ex)
+            {
+                if (!(ex is IOException || ex is UnauthorizedAccessException) || i >= 9) throw;
+                Thread.Sleep(1000);
+                StopLoader();
+            }
+        }
+    }
+
+    // Scarica l'ultima release ufficiale e la installa in homebrew\services.
+    // Usato sia dall'aggiornamento sia dalla prima installazione quando l'exe
+    // non porta i binari incorporati. Restituisce il nome della versione.
+    string InstallaReleaseUfficiale()
+    {
         string tmp = null;
         try
         {
             SetUpdateLabel(L.T("cerco l'ultima build ufficiale..."), Th.Sub);
-            // Gli artefatti di GitHub scadono dopo ~90 giorni: si scorrono le
-            // build recenti finche' se ne trova una ancora scaricabile.
-            string runs = HttpGet("https://api.github.com/repos/SteamDeckHomebrew/decky-loader/actions/workflows/build-win.yml/runs?branch=main&status=success&per_page=20");
-            MatchCollection corse = Regex.Matches(runs,
-                "\"id\"\\s*:\\s*(\\d+),\\s*\"name\"\\s*:\\s*\"Builder Win\".*?\"head_sha\"\\s*:\\s*\"([0-9a-f]{40})\"",
-                RegexOptions.Singleline);
-            if (corse.Count == 0) throw new Exception(L.T("Nessuna build ufficiale trovata su GitHub."));
-
-            string artId = "";
-            for (int i = 0; i < corse.Count && artId == ""; i++)
-            {
-                if (i > 0) SetUpdateLabel(L.T("la build piu' recente e' scaduta, provo la precedente..."), Th.Sub);
-                try
-                {
-                    string arts = HttpGet("https://api.github.com/repos/SteamDeckHomebrew/decky-loader/actions/runs/" + corse[i].Groups[1].Value + "/artifacts");
-                    Match ma = Regex.Match(arts, "\"id\"\\s*:\\s*(\\d+).*?\"expired\"\\s*:\\s*(true|false)", RegexOptions.Singleline);
-                    if (ma.Success && ma.Groups[2].Value == "false")
-                    {
-                        artId = ma.Groups[1].Value;
-                        sha = corse[i].Groups[2].Value;
-                    }
-                }
-                catch { }
-            }
-            if (artId == "") throw new Exception(L.T("Le build ufficiali recenti non sono piu' scaricabili da GitHub."));
-
-            string tag = "main";
-            try
-            {
-                Match mt = Regex.Match(HttpGet("https://api.github.com/repos/SteamDeckHomebrew/decky-loader/tags?per_page=1"), "\"name\"\\s*:\\s*\"([^\"]+)\"");
-                if (mt.Success) tag = mt.Groups[1].Value;
-            }
-            catch { }
+            ReleaseInfo rel = LatestRelease();
 
             tmp = Path.Combine(Path.GetTempPath(), "decky-dl-" + Guid.NewGuid().ToString("N"));
             Directory.CreateDirectory(tmp);
-            string zip = Path.Combine(tmp, "loader.zip");
-            DownloadFile("https://nightly.link/SteamDeckHomebrew/decky-loader/actions/artifacts/" + artId + ".zip", zip);
-
-            SetUpdateLabel(L.T("estraggo i file..."), Th.Sub);
-            string ext = Path.Combine(tmp, "estratto");
-            System.IO.Compression.ZipFile.ExtractToDirectory(zip, ext);
-            string srcNo = Path.Combine(ext, "PluginLoader_noconsole.exe");
-            string srcCo = Path.Combine(ext, "PluginLoader.exe");
-            if (!File.Exists(srcNo)) throw new Exception(L.T("L'archivio scaricato non contiene PluginLoader_noconsole.exe."));
+            string srcNo = Path.Combine(tmp, "PluginLoader_noconsole.exe");
+            string srcCo = Path.Combine(tmp, "PluginLoader.exe");
+            // tutto scaricato e verificato prima di toccare il loader in uso
+            DownloadVerified(rel.UrlNoConsole, srcNo, rel.DigestNoConsole);
+            bool haConsole = false;
+            if (rel.UrlConsole != "")
+            {
+                try { DownloadVerified(rel.UrlConsole, srcCo, rel.DigestConsole); haConsole = true; }
+                catch (Exception ex) { Log("PluginLoader.exe non scaricato: " + ex.Message); }
+            }
 
             SetUpdateLabel(L.T("installo..."), Th.Sub);
-            foreach (Process pr in LoaderProcesses()) { try { pr.Kill(); } catch { } }
-            Thread.Sleep(2500);
+            StopLoader();
             Directory.CreateDirectory(ServicesDir);
-            File.Copy(srcNo, ExeNoConsole, true);
-            if (File.Exists(srcCo)) File.Copy(srcCo, Path.Combine(ServicesDir, "PluginLoader.exe"), true);
-            File.WriteAllText(BuildInfo, tag + "|" + sha + "|" + DateTime.Now.ToString("dd/MM/yyyy"));
-            return tag;
+            CopyWithRetry(srcNo, ExeNoConsole);
+            if (haConsole)
+            {
+                try { CopyWithRetry(srcCo, Path.Combine(ServicesDir, "PluginLoader.exe")); }
+                catch (Exception ex) { Log("PluginLoader.exe non copiato: " + ex.Message); }
+            }
+            File.WriteAllText(BuildInfo, rel.Tag + "||" + DateTime.Now.ToString("dd/MM/yyyy"));
+            Log("installata " + rel.Tag);
+            return rel.Tag;
         }
         finally
         {
@@ -1600,18 +1716,18 @@ public class MainForm : Form
             L.T("Scarico da GitHub l'ultima versione ufficiale di Decky per Windows\n(circa 30 MB) e la installo al posto di quella attuale.\n\nIl loader si chiude per un momento. Procedere?"),
             L.T("Aggiorna Decky"), MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes) return;
 
+        updating = true;
         btnUpdate.Enabled = false;
         btnUpdate.Text = L.T("Aggiornamento...");
         StartThread(delegate
         {
             try
             {
-                string sha;
-                string tag = ScaricaLoaderUfficiali(out sha);
+                string tag = InstallaReleaseUfficiale();
                 StartLoaderIfNeeded();
                 Thread.Sleep(2500);
 
-                Invoke(new MethodInvoker(delegate
+                UI(delegate
                 {
                     updating = false;
                     btnUpdate.Enabled = true;
@@ -1627,14 +1743,17 @@ public class MainForm : Form
                         }
                     }
                     else MessageBox.Show(this,
-                        L.T("Decky aggiornato a ") + tag + " (" + Short(sha) + L.T(").\n\nRiavvia Steam per ricaricare l'interfaccia."),
+                        L.T("Decky aggiornato a ") + tag + L.T(".\n\nRiavvia Steam per ricaricare l'interfaccia."),
                         L.T("Aggiornamento completato"), MessageBoxButtons.OK, MessageBoxIcon.Information);
-                }));
+                });
                 CheckUpdatesWorker();
             }
             catch (Exception ex)
             {
-                Invoke(new MethodInvoker(delegate
+                Log("aggiornamento: " + ex);
+                // se si e' fermato il loader prima dell'errore, lo si riavvia com'era
+                StartLoaderIfNeeded();
+                UI(delegate
                 {
                     updating = false;
                     btnUpdate.Enabled = true;
@@ -1643,7 +1762,7 @@ public class MainForm : Form
                     if (silenzioso) SetUpdateLabel(L.T("aggiornamento automatico non riuscito"), Th.Warn, true);
                     else MessageBox.Show(this, L.T("Aggiornamento non riuscito:\n") + ex.Message,
                         L.T("Errore"), MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                }));
+                });
             }
         });
     }
@@ -1674,6 +1793,21 @@ public class MainForm : Form
         foreach (string a in args)
             if (a == "--minimized" || a == "-m") minimized = true;
 
+        bool primo;
+        unico = new Mutex(true, "Local\\DeckyManager.SingleInstance", out primo);
+        showEvent = new EventWaitHandle(false, EventResetMode.AutoReset, ShowEventName);
+        if (!primo)
+        {
+            // gia' aperto (magari nascosto nel tray): lo si porta davanti
+            if (!minimized) { try { showEvent.Set(); } catch { } }
+            return;
+        }
+
+        // un errore imprevisto finisce nel log invece di chiudere il pannello
+        Application.SetUnhandledExceptionMode(UnhandledExceptionMode.CatchException);
+        Application.ThreadException += delegate(object s, ThreadExceptionEventArgs e) { Log("errore: " + e.Exception); };
+        AppDomain.CurrentDomain.UnhandledException += delegate(object s, UnhandledExceptionEventArgs e) { Log("errore fatale: " + e.ExceptionObject); };
+
         CleanOldExe();
 
         // avviato dal boot: fa partire il loader al posto della vecchia scorciatoia
@@ -1686,5 +1820,17 @@ public class MainForm : Form
         L.En = (lingua == "en");
 
         Application.Run(new MainForm(minimized));
+        LiberaIstanza();
+    }
+
+    static Mutex unico;
+
+    // Da chiamare prima di rilanciare se stessi (cambio lingua, pannello
+    // aggiornato), altrimenti la nuova copia si troverebbe bloccata.
+    static void LiberaIstanza()
+    {
+        try { if (unico != null) { unico.ReleaseMutex(); unico.Close(); } }
+        catch { }
+        unico = null;
     }
 }

@@ -18,7 +18,7 @@ No Python, no Node, no Git, no installer: a single `.exe` that does everything.
 
 | | |
 |---|---|
-| **Installs Decky** | Downloads the official Windows build straight from the Decky Loader CI and sets it up in `%USERPROFILE%\homebrew`. |
+| **Installs Decky** | Downloads the official Windows build straight from the Decky Loader releases and sets it up in `%USERPROFILE%\homebrew`. |
 | **Enables Steam's debugger** | Creates the `.cef-enable-remote-debugging` file in your Steam folder — the switch that lets Decky attach to the Big Picture UI. |
 | **Live status** | Loader, Steam, ports 8080/1337, CEF file, installed plugins — all at a glance. |
 | **Start / stop** | Runs the loader with a proper working directory, or stops it. |
@@ -59,9 +59,11 @@ Steam's UI is a Chromium (CEF) application. With `.cef-enable-remote-debugging` 
 
 ## Updating
 
-On every launch the panel asks the Decky Loader repository for the newest successful Windows CI build and compares it with what you have installed.
+On every launch the panel asks GitHub for the latest **official Decky Loader release** and compares its version with the one you have installed (`build-info.txt`).
 
-GitHub keeps CI artifacts for about 90 days. If the newest build's files are gone, the panel walks back through the last 20 builds until it finds one that is still downloadable. Downloads go through [nightly.link](https://nightly.link), which serves GitHub Actions artifacts without requiring a login.
+Since v3.3.0 every Decky release ships ready-made Windows executables (`PluginLoader-win.exe` and `PluginLoader-win-noconsole.exe`, plus ARM64 builds, which the panel picks automatically on ARM PCs). The panel downloads them straight from the release, checks the SHA-256 GitHub publishes for each file, and only then stops the loader, swaps the files and starts it again. If anything fails, the installed version is left untouched and the loader is restarted.
+
+Automatic updates run at most once every 6 hours, never while a game is running, and only one panel can be open at a time — opening it again just brings the existing window forward. Errors are written to `%USERPROFILE%\homebrew\logs\decky-manager.log`.
 
 ## Troubleshooting
 
@@ -90,7 +92,7 @@ Produces a ~30 MB build with the Decky loader binaries embedded, so it can insta
 
 Decky Manager is MIT licensed (see [LICENSE](LICENSE) and [NOTICE.md](NOTICE.md)).
 
-**Decky Loader is a separate project, licensed GPL-2.0.** This repository contains none of its code and releases ship none of its binaries: they are downloaded from the project's own CI at install time. If you produce an embedded build with `-Embed`, you are redistributing GPL-2.0 binaries and take on the obligations that come with it — including making the corresponding source available.
+**Decky Loader is a separate project, licensed GPL-2.0.** This repository contains none of its code and releases ship none of its binaries: they are downloaded from the project's own GitHub releases at install time. If you produce an embedded build with `-Embed`, you are redistributing GPL-2.0 binaries and take on the obligations that come with it — including making the corresponding source available.
 
 ## Credits
 
