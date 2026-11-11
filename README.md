@@ -2,7 +2,13 @@
 
 # Decky Manager for Windows
 
-A tiny (~45 KB) control panel that installs, runs and keeps **[Decky Loader](https://github.com/SteamDeckHomebrew/decky-loader)** — the Steam Deck plugin system — working inside **Steam Big Picture on Windows**.
+[![Latest release](https://img.shields.io/github/v/release/TheBlackSide243/decky-loader-windows?label=release&color=ff8a14)](https://github.com/TheBlackSide243/decky-loader-windows/releases/latest)
+[![Build](https://img.shields.io/github/actions/workflow/status/TheBlackSide243/decky-loader-windows/build.yml?branch=main)](https://github.com/TheBlackSide243/decky-loader-windows/actions/workflows/build.yml)
+[![Downloads](https://img.shields.io/github/downloads/TheBlackSide243/decky-loader-windows/total?color=4ad67c)](https://github.com/TheBlackSide243/decky-loader-windows/releases)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+![Windows 10/11](https://img.shields.io/badge/Windows-10%20%7C%2011-0078d4)
+
+A tiny (~60 KB) control panel that installs, runs and keeps **[Decky Loader](https://github.com/SteamDeckHomebrew/decky-loader)** — the Steam Deck plugin system — working inside **Steam Big Picture on Windows**.
 
 No Python, no Node, no Git, no installer: a single `.exe` that does everything.
 
@@ -23,7 +29,7 @@ No Python, no Node, no Git, no installer: a single `.exe` that does everything.
 | **Live status** | Loader, Steam, ports 8080/1337, CEF file, installed plugins — all at a glance. |
 | **Start / stop** | Runs the loader with a proper working directory, or stops it. |
 | **Starts with Windows** | Optional, via a Startup shortcut; can sit quietly in the system tray. |
-| **Keeps itself current** | Checks for a newer Decky build on every launch and (optionally) installs it by itself. |
+| **Keeps itself current** | Checks for a newer Decky release on every launch and (optionally) installs it by itself. |
 
 The orange button is always *the thing you should do next*: create the CEF file, install Decky, or update. When nothing is orange, you are good.
 
@@ -78,7 +84,7 @@ Automatic updates run at most once every 6 hours, never while a game is running,
 .\build.ps1
 ```
 
-Produces `DeckyManager.exe` (~45 KB) using the C# compiler that ships with Windows — no SDK, no NuGet, no Visual Studio.
+Produces `DeckyManager.exe` (~60 KB) using the C# compiler that ships with Windows — no SDK, no NuGet, no Visual Studio.
 
 ```powershell
 .\build.ps1 -Embed

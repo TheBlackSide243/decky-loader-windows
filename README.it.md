@@ -2,7 +2,13 @@
 
 # Decky Manager per Windows
 
-Un pannello di controllo minuscolo (~45 KB) che installa, avvia e tiene aggiornato **[Decky Loader](https://github.com/SteamDeckHomebrew/decky-loader)** — il sistema di plugin dello Steam Deck — dentro **Steam Big Picture su Windows**.
+[![Latest release](https://img.shields.io/github/v/release/TheBlackSide243/decky-loader-windows?label=release&color=ff8a14)](https://github.com/TheBlackSide243/decky-loader-windows/releases/latest)
+[![Build](https://img.shields.io/github/actions/workflow/status/TheBlackSide243/decky-loader-windows/build.yml?branch=main)](https://github.com/TheBlackSide243/decky-loader-windows/actions/workflows/build.yml)
+[![Downloads](https://img.shields.io/github/downloads/TheBlackSide243/decky-loader-windows/total?color=4ad67c)](https://github.com/TheBlackSide243/decky-loader-windows/releases)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+![Windows 10/11](https://img.shields.io/badge/Windows-10%20%7C%2011-0078d4)
+
+Un pannello di controllo minuscolo (~60 KB) che installa, avvia e tiene aggiornato **[Decky Loader](https://github.com/SteamDeckHomebrew/decky-loader)** — il sistema di plugin dello Steam Deck — dentro **Steam Big Picture su Windows**.
 
 Niente Python, niente Node, niente Git, nessun installer: un solo `.exe` che fa tutto.
 
@@ -80,7 +86,7 @@ L'aggiornamento automatico parte al massimo una volta ogni 6 ore, mai mentre è 
 .\build.ps1
 ```
 
-Genera `DeckyManager.exe` (~45 KB) usando il compilatore C# già incluso in Windows: niente SDK, niente NuGet, niente Visual Studio.
+Genera `DeckyManager.exe` (~60 KB) usando il compilatore C# già incluso in Windows: niente SDK, niente NuGet, niente Visual Studio.
 
 ```powershell
 .\build.ps1 -Embed
