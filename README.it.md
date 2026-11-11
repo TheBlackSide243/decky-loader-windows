@@ -8,7 +8,7 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 ![Windows 10/11](https://img.shields.io/badge/Windows-10%20%7C%2011-0078d4)
 
-Un pannello di controllo minuscolo (~60 KB) che installa, avvia e tiene aggiornato **[Decky Loader](https://github.com/SteamDeckHomebrew/decky-loader)** — il sistema di plugin dello Steam Deck — dentro **Steam Big Picture su Windows**.
+Un pannello di controllo minuscolo (~70 KB) che installa, avvia e tiene aggiornato **[Decky Loader](https://github.com/SteamDeckHomebrew/decky-loader)** — il sistema di plugin dello Steam Deck — dentro **Steam Big Picture su Windows**.
 
 Niente Python, niente Node, niente Git, nessun installer: un solo `.exe` che fa tutto.
 
@@ -59,6 +59,11 @@ Non chiede mai i permessi di amministratore. Unica eccezione: se Steam è in `Pr
 * **Avvia ridotto a icona nella barra di sistema** — all'accensione parte il pannello stesso, nascosto vicino all'orologio, e avvia lui il loader. Clic sinistro sull'icona per aprirlo, clic destro per il menu. Su Windows 11 le icone nuove finiscono nel riquadro delle *icone nascoste* sotto la freccetta `^`: trascinala sulla barra per tenerla sempre in vista.
 * **Aggiorna Decky da solo quando esce una versione nuova** — attiva di serie. A ogni apertura, se esiste una versione più recente, la scarica e la installa senza chiedere nulla, avvisandoti con un fumetto sull'icona. Non lo fa mai mentre è in corso un gioco.
 
+## Dimensione della finestra
+
+Il pannello si adatta allo schermo: su un monitor 1440p o 4K si apre più grande e sta sempre dentro lo schermo. Gestisce i DPI per monitor, quindi resta nitido con qualsiasi scala di Windows e si ridisegna se lo trascini su un monitor con una scala diversa.
+
+Per ingrandirlo o rimpicciolirlo trascina un bordo della finestra: tutto il contenuto si ridimensiona in proporzione e la misura viene ricordata. Da tastiera fanno lo stesso **Ctrl +** e **Ctrl −**, mentre **Ctrl 0** torna alla misura automatica.
 ## Come funziona
 
 L'interfaccia di Steam è un'applicazione Chromium (CEF). Con il file `.cef-enable-remote-debugging` presente, Steam apre un debugger sulla porta **8080**. `PluginLoader.exe` di Decky vi si collega, trova la scheda `SharedJSContext` (l'interfaccia React che sta dietro a Big Picture) e vi inietta il proprio frontend, servito da un server locale sulla porta **1337**. Decky Manager è semplicemente ciò che prepara tutto questo e lo tiene in piedi.
@@ -86,7 +91,7 @@ L'aggiornamento automatico parte al massimo una volta ogni 6 ore, mai mentre è 
 .\build.ps1
 ```
 
-Genera `DeckyManager.exe` (~60 KB) usando il compilatore C# già incluso in Windows: niente SDK, niente NuGet, niente Visual Studio.
+Genera `DeckyManager.exe` (~70 KB) usando il compilatore C# già incluso in Windows: niente SDK, niente NuGet, niente Visual Studio.
 
 ```powershell
 .\build.ps1 -Embed

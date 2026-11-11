@@ -49,6 +49,7 @@ static class Th
 class RoundButton : Button
 {
     public bool Primary = false;
+    public float Sc = 1f;
     bool hover = false;
 
     public RoundButton()
@@ -74,7 +75,7 @@ class RoundButton : Button
         g.Clear(Parent != null ? Parent.BackColor : Th.Bg);
 
         Rectangle r = new Rectangle(0, 0, Width - 1, Height - 1);
-        using (GraphicsPath path = Th.Round(r, 9))
+        using (GraphicsPath path = Th.Round(r, (int)Math.Round(9 * Sc)))
         {
             Color fill, border, txt;
             if (!Enabled)
@@ -127,10 +128,10 @@ class ThemedCheck : CheckBox
         g.SmoothingMode = SmoothingMode.AntiAlias;
         g.Clear(Parent != null ? Parent.BackColor : Th.Bg);
 
-        int side = 19;
+        int side = Px(19);
         int top = (Height - side) / 2;
         Rectangle box = new Rectangle(1, top, side, side);
-        using (GraphicsPath path = Th.Round(box, 5))
+        using (GraphicsPath path = Th.Round(box, Px(5)))
         {
             using (SolidBrush b = new SolidBrush(Checked
                 ? (Enabled ? Th.Accent : Color.FromArgb(122, 82, 30))
@@ -141,16 +142,16 @@ class ThemedCheck : CheckBox
         }
         if (Checked)
         {
-            using (Pen p = new Pen(Color.FromArgb(24, 18, 8), 2.2f))
+            using (Pen p = new Pen(Color.FromArgb(24, 18, 8), 2.2f * Sc))
             {
                 p.StartCap = LineCap.Round; p.EndCap = LineCap.Round;
                 g.DrawLines(p, new Point[] {
-                    new Point(box.X + 5, box.Y + 10),
-                    new Point(box.X + 8, box.Y + 13),
-                    new Point(box.X + 14, box.Y + 6) });
+                    new Point(box.X + Px(5), box.Y + Px(10)),
+                    new Point(box.X + Px(8), box.Y + Px(13)),
+                    new Point(box.X + Px(14), box.Y + Px(6)) });
             }
         }
-        Rectangle txt = new Rectangle(side + 10, 0, Width - side - 10, Height);
+        Rectangle txt = new Rectangle(side + Px(10), 0, Width - side - Px(10), Height);
         TextRenderer.DrawText(g, Text, Font, txt, Enabled ? ForeColor : Color.FromArgb(104, 104, 114),
             TextFormatFlags.Left | TextFormatFlags.VerticalCenter);
     }
@@ -158,13 +159,18 @@ class ThemedCheck : CheckBox
     public override Size GetPreferredSize(Size proposed)
     {
         Size t = TextRenderer.MeasureText(Text, Font);
-        return new Size(t.Width + 19 + 16, Math.Max(t.Height, 21) + 6);
+        return new Size(t.Width + Px(19 + 16), Math.Max(t.Height, Px(21)) + Px(6));
     }
+
+    public float Sc = 1f;
+    int Px(int v) { return (int)Math.Round(v * Sc); }
 }
 
 // ------------------------------------------------------- card arrotondata
 class Card : Panel
 {
+    public float Sc = 1f;
+
     public Card()
     {
         BackColor = Th.Bg;
@@ -177,7 +183,7 @@ class Card : Panel
         Graphics g = e.Graphics;
         g.SmoothingMode = SmoothingMode.AntiAlias;
         Rectangle r = new Rectangle(0, 0, Width - 1, Height - 1);
-        using (GraphicsPath path = Th.Round(r, 10))
+        using (GraphicsPath path = Th.Round(r, (int)Math.Round(10 * Sc)))
         {
             using (SolidBrush b = new SolidBrush(Th.Panel)) g.FillPath(b, path);
             using (Pen p = new Pen(Th.Line, 1)) g.DrawPath(p, path);
@@ -219,6 +225,7 @@ static class L
         { "Apri cartella log", "Open log folder" },
         { "Dopo un aggiornamento riavvia Steam per ricaricare l'interfaccia.", "After an update, restart Steam to reload the interface." },
         { "Apri pannello", "Open panel" },
+        { "Trascina i bordi per ingrandire o rimpicciolire (Ctrl +  Ctrl -  Ctrl 0)", "Drag the edges to make it bigger or smaller (Ctrl +  Ctrl -  Ctrl 0)" },
         { "Ferma Decky", "Stop Decky" },
         { "Chiudi pannello (Decky resta attivo)", "Close panel (Decky keeps running)" },
         { "Risorsa mancante nell'eseguibile: ", "Resource missing from the executable: " },
@@ -370,28 +377,121 @@ public class MainForm : Form
         t.Start();
     }
 
+    // ------------------------------------------------ scala e ridimensionamento
+    // Tutte le misure dell'interfaccia sono pensate a 96 DPI e passano da S():
+    // sc = (DPI del monitor / 96) * zoom. Lo zoom parte da un valore adatto alla
+    // risoluzione dello schermo e cambia trascinando i bordi della finestra
+    // (o con Ctrl +, Ctrl -, Ctrl 0). Cambiando monitor o scala di Windows la
+    // finestra si ricostruisce alla nuova densita' di pixel.
+    float sc = 1f;
+    float zoom = 1f;
+    int dpi = 96;
+    bool rebuilding = false;
+    Size lastClient = Size.Empty;
+    FlowLayoutPanel root;
+
+    const float ZoomMin = 0.5f, ZoomMax = 3f;
+    const int BaseHeight = 700;   // altezza indicativa del pannello a 96 DPI e zoom 1
+
+    int S(int px) { return (int)Math.Round(px * sc); }
+    Padding P(int l, int t, int r, int b) { return new Padding(S(l), S(t), S(r), S(b)); }
+    Font F(float pt) { return F(pt, FontStyle.Regular); }
+    Font F(float pt, FontStyle st) { return new Font("Segoe UI", pt * 96f / 72f * sc, st, GraphicsUnit.Pixel); }
+
+    static Icon AppIcon(int size)
+    {
+        try
+        {
+            using (Stream st = Assembly.GetExecutingAssembly().GetManifestResourceStream("appicon"))
+                if (st != null) return new Icon(st, size, size);
+        }
+        catch { }
+        try { return new Icon(Icon.ExtractAssociatedIcon(Application.ExecutablePath), size, size); }
+        catch { return null; }
+    }
+
+    // Immagine dell'icona alla misura richiesta. I fotogrammi di decky.ico sono
+    // PNG, che Icon.ToBitmap del .NET Framework non sa convertire: si prende il
+    // fotogramma piu' grande e lo si ridimensiona in alta qualita'.
+    static Bitmap AppImage(int size)
+    {
+        try
+        {
+            byte[] b;
+            using (Stream st = Assembly.GetExecutingAssembly().GetManifestResourceStream("appicon"))
+            using (MemoryStream ms = new MemoryStream())
+            {
+                if (st == null) throw new Exception();
+                st.CopyTo(ms);
+                b = ms.ToArray();
+            }
+            int n = BitConverter.ToUInt16(b, 4), bestW = 0, off = 0, len = 0;
+            for (int i = 0; i < n; i++)
+            {
+                int o = 6 + 16 * i;
+                int w = b[o] == 0 ? 256 : b[o];
+                if (w > bestW) { bestW = w; len = BitConverter.ToInt32(b, o + 8); off = BitConverter.ToInt32(b, o + 12); }
+            }
+            using (MemoryStream frame = new MemoryStream(b, off, len))
+            using (Image src = Image.FromStream(frame))
+            {
+                Bitmap dst = new Bitmap(size, size);
+                using (Graphics g = Graphics.FromImage(dst))
+                {
+                    g.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                    g.PixelOffsetMode = PixelOffsetMode.HighQuality;
+                    g.DrawImage(src, 0, 0, size, size);
+                }
+                return dst;
+            }
+        }
+        catch { }
+        try { return Icon.ExtractAssociatedIcon(Application.ExecutablePath).ToBitmap(); }
+        catch { return null; }
+    }
+
     public MainForm(bool minimized)
     {
         startHidden = minimized;
         Text = "Decky Loader Manager";
-        FormBorderStyle = FormBorderStyle.FixedSingle;
+        AutoScaleMode = AutoScaleMode.None;   // la scala la gestisce S()
+        FormBorderStyle = FormBorderStyle.Sizable;
         MaximizeBox = false;
-        StartPosition = FormStartPosition.CenterScreen;
-        Font = new Font("Segoe UI", 9.5f);
+        StartPosition = FormStartPosition.Manual;
+        KeyPreview = true;
         BackColor = Th.Bg;
         ForeColor = Th.Text;
-        AutoSize = true;
-        AutoSizeMode = AutoSizeMode.GrowAndShrink;
-        try { Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath); } catch { }
+        Icon ic = AppIcon(32);
+        if (ic != null) Icon = ic;
 
-        FlowLayoutPanel root = new FlowLayoutPanel();
+        Screen scr = Screen.FromPoint(Cursor.Position);
+        dpi = MonitorDpi(scr);
+        zoom = InitialZoom(scr);
+        BuildUi();
+        SelfHealAutostart();
+        RefreshStatus();
+        FitToScreen(scr, true);
+        // il controllo aggiornamenti parte in OnShown: qui la finestra non ha
+        // ancora un handle e il thread toccherebbe i controlli dal thread sbagliato
+    }
+
+    void BuildUi()
+    {
+        sc = dpi / 96f * zoom;
+        Font = F(9.5f);
+        cards.Clear();
+        if (tips != null) tips.Dispose();
+        tips = new ToolTip();
+
+        root = new FlowLayoutPanel();
         root.FlowDirection = FlowDirection.TopDown;
         root.WrapContents = false;
         root.AutoSize = true;
         root.AutoSizeMode = AutoSizeMode.GrowAndShrink;
         root.BackColor = Th.Bg;
-        root.Padding = new Padding(20, 18, 20, 18);
-        Controls.Add(root);
+        root.Padding = P(20, 18, 20, 18);
+        root.Location = Point.Empty;
+        root.Font = Font;
 
         // ---- intestazione: icona + titolo
         FlowLayoutPanel head = new FlowLayoutPanel();
@@ -400,20 +500,20 @@ public class MainForm : Form
         head.AutoSize = true;
         head.AutoSizeMode = AutoSizeMode.GrowAndShrink;
         head.BackColor = Th.Bg;
-        head.Margin = new Padding(0, 0, 0, 16);
+        head.Margin = P(0, 0, 0, 16);
         root.Controls.Add(head);
 
-        try
+        Bitmap big = AppImage(S(40));
+        if (big != null)
         {
             PictureBox pic = new PictureBox();
-            pic.Image = new Icon(Icon.ExtractAssociatedIcon(Application.ExecutablePath), 40, 40).ToBitmap();
+            pic.Image = big;
             pic.SizeMode = PictureBoxSizeMode.Zoom;
-            pic.Size = new Size(40, 40);
+            pic.Size = new Size(S(40), S(40));
             pic.BackColor = Th.Bg;
-            pic.Margin = new Padding(0, 2, 12, 0);
+            pic.Margin = P(0, 2, 12, 0);
             head.Controls.Add(pic);
         }
-        catch { }
 
         FlowLayoutPanel titles = new FlowLayoutPanel();
         titles.FlowDirection = FlowDirection.TopDown;
@@ -426,7 +526,7 @@ public class MainForm : Form
 
         Label t1 = new Label();
         t1.Text = "DECKY LOADER";
-        t1.Font = new Font("Segoe UI", 15f, FontStyle.Bold);
+        t1.Font = F(15f, FontStyle.Bold);
         t1.ForeColor = Th.Accent;
         t1.AutoSize = true;
         t1.BackColor = Color.Transparent;
@@ -446,8 +546,8 @@ public class MainForm : Form
         sep.AutoSize = true;
         sep.BackColor = Color.Transparent;
         sep.ForeColor = Th.Line;
-        sep.Font = new Font("Segoe UI", 8.5f);
-        sep.Margin = new Padding(0, 11, 0, 0);
+        sep.Font = F(8.5f);
+        sep.Margin = P(0, 11, 0, 0);
         titleRow.Controls.Add(sep);
         titleRow.Controls.Add(LinguaLink("ENG", "en"));
 
@@ -456,7 +556,7 @@ public class MainForm : Form
         t2.ForeColor = Th.Sub;
         t2.AutoSize = true;
         t2.BackColor = Color.Transparent;
-        t2.Margin = new Padding(2, 0, 0, 0);
+        t2.Margin = P(2, 0, 0, 0);
         titles.Controls.Add(t2);
 
         // ---- card stato
@@ -474,24 +574,27 @@ public class MainForm : Form
         lblUpdate  = AddRow(vt, L.T("Aggiornamenti"));
 
         chkAutostart = new ThemedCheck();
+        chkAutostart.Sc = sc;
         chkAutostart.Text = L.T("Avvia Decky automaticamente all'accensione del PC");
         chkAutostart.AutoSize = true;
-        chkAutostart.Margin = new Padding(4, 16, 0, 2);
+        chkAutostart.Margin = P(4, 16, 0, 2);
         chkAutostart.CheckedChanged += new EventHandler(OnAutostartToggled);
         root.Controls.Add(chkAutostart);
 
         chkTray = new ThemedCheck();
+        chkTray.Sc = sc;
         chkTray.Text = L.T("Avvia ridotto a icona nella barra di sistema");
         chkTray.AutoSize = true;
-        chkTray.Margin = new Padding(28, 0, 0, 6);
+        chkTray.Margin = P(28, 0, 0, 6);
         chkTray.CheckedChanged += new EventHandler(OnTrayOptionToggled);
         tips.SetToolTip(chkTray, L.T("All'accensione parte anche questo pannello, nascosto vicino\nall'orologio: un clic sull'icona lo riapre."));
         root.Controls.Add(chkTray);
 
         chkAuto = new ThemedCheck();
+        chkAuto.Sc = sc;
         chkAuto.Text = L.T("Aggiorna Decky da solo quando esce una versione nuova");
         chkAuto.AutoSize = true;
-        chkAuto.Margin = new Padding(4, 0, 0, 12);
+        chkAuto.Margin = P(4, 0, 0, 12);
         chkAuto.CheckedChanged += new EventHandler(OnAutoUpdateToggled);
         tips.SetToolTip(chkAuto, L.T("Al momento dell'apertura, se esiste una versione piu' recente\nviene scaricata e installata da sola.\nNon lo fa mentre e' in corso un gioco."));
         root.Controls.Add(chkAuto);
@@ -513,13 +616,169 @@ public class MainForm : Form
         hint.ForeColor = Th.Sub;
         hint.BackColor = Color.Transparent;
         hint.AutoSize = true;
-        hint.Margin = new Padding(4, 14, 0, 0);
+        hint.Margin = P(4, 14, 0, 0);
         root.Controls.Add(hint);
 
-        SelfHealAutostart();
+        tips.SetToolTip(root, L.T("Trascina i bordi per ingrandire o rimpicciolire (Ctrl +  Ctrl -  Ctrl 0)"));
+        Controls.Add(root);
+    }
+
+    // Ricostruisce l'interfaccia alla scala corrente, conservando lo stato
+    // che non si ricava da RefreshStatus (aggiornamento in corso, messaggi).
+    void Rebuild()
+    {
+        string updText = lblUpdate.Text;
+        Color updColor = lblUpdate.ForeColor;
+        bool updPrimary = btnUpdate.Primary, updEnabled = btnUpdate.Enabled, instEnabled = btnInstall.Enabled;
+        string updBtnText = btnUpdate.Text;
+
+        rebuilding = true;
+        SuspendLayout();
+        Control old = root;
+        Controls.Remove(old);
+        BuildUi();
+        old.Dispose();
         RefreshStatus();
-        // il controllo aggiornamenti parte in OnShown: qui la finestra non ha
-        // ancora un handle e il thread toccherebbe i controlli dal thread sbagliato
+        lblUpdate.Text = updText;
+        lblUpdate.ForeColor = updColor;
+        btnUpdate.Primary = updPrimary;
+        btnUpdate.Enabled = updEnabled;
+        btnUpdate.Text = updBtnText;
+        btnInstall.Enabled = instEnabled;
+        ResumeLayout(true);
+        rebuilding = false;
+        ApplySize();
+    }
+
+    // Porta la finestra esattamente alla misura del contenuto.
+    void ApplySize()
+    {
+        rebuilding = true;
+        EqualizeCards();
+        root.PerformLayout();
+        ClientSize = root.GetPreferredSize(Size.Empty);
+        rebuilding = false;
+        lastClient = ClientSize;
+    }
+
+    // La finestra deve stare nello schermo: se non ci sta si riduce lo zoom.
+    void FitToScreen(Screen scr, bool center)
+    {
+        Rectangle wa = scr.WorkingArea;
+        ApplySize();
+        // il testo non cresce in modo perfettamente lineare: qualche passaggio
+        for (int k = 0; k < 4; k++)
+        {
+            // misura del contenuto, non della finestra: Windows non lascia
+            // una finestra piu' grande dello schermo e la taglierebbe
+            Size pref = root.GetPreferredSize(Size.Empty);
+            Size cornice = SizeFromClientSize(Size.Empty);   // bordi + barra del titolo
+            int bordoW = cornice.Width, bordoH = cornice.Height;
+            float r = Math.Min((wa.Height * 0.96f - bordoH) / pref.Height,
+                               (wa.Width * 0.96f - bordoW) / pref.Width);
+            if (r >= 1f || zoom <= ZoomMin) break;
+            zoom = Math.Max(ZoomMin, zoom * r * 0.99f);
+            Rebuild();
+        }
+        Point loc = center
+            ? new Point(wa.Left + (wa.Width - Width) / 2, wa.Top + (wa.Height - Height) / 2)
+            : Location;
+        loc.X = Math.Max(wa.Left, Math.Min(loc.X, wa.Right - Width));
+        loc.Y = Math.Max(wa.Top, Math.Min(loc.Y, wa.Bottom - Height));
+        Location = loc;
+    }
+
+    float AutoZoom(Screen scr)
+    {
+        // circa due terzi dell'altezza utile dello schermo, misurata in pixel
+        // "logici": cosi' su un 1440p o un 4K il pannello non resta minuscolo
+        float effH = scr.WorkingArea.Height * 96f / dpi;
+        return Math.Max(1f, Math.Min(2f, effH * 0.62f / BaseHeight));
+    }
+
+    float InitialZoom(Screen scr)
+    {
+        float z;
+        if (float.TryParse(ReadSetting("Zoom", ""), System.Globalization.NumberStyles.Float,
+                System.Globalization.CultureInfo.InvariantCulture, out z) && z >= ZoomMin && z <= ZoomMax)
+            return z;
+        return AutoZoom(scr);
+    }
+
+    void SetZoom(float z, bool save)
+    {
+        z = Math.Max(ZoomMin, Math.Min(ZoomMax, z));
+        if (save) WriteSetting("Zoom", z.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture));
+        else WriteSetting("Zoom", "");
+        if (Math.Abs(z - zoom) < 0.01f) { ApplySize(); return; }
+        zoom = z;
+        Rebuild();
+        FitToScreen(Screen.FromControl(this), false);
+    }
+
+    protected override void OnResizeEnd(EventArgs e)
+    {
+        base.OnResizeEnd(e);
+        if (rebuilding || lastClient.Width == 0) return;
+        Size now = ClientSize;
+        if (now == lastClient) return;   // solo spostata
+        float rw = (float)now.Width / lastClient.Width, rh = (float)now.Height / lastClient.Height;
+        float r = Math.Abs(rw - 1f) >= Math.Abs(rh - 1f) ? rw : rh;
+        SetZoom(zoom * r, true);
+    }
+
+    protected override void OnKeyDown(KeyEventArgs e)
+    {
+        base.OnKeyDown(e);
+        if (!e.Control) return;
+        if (e.KeyCode == Keys.Oemplus || e.KeyCode == Keys.Add) { SetZoom(zoom * 1.1f, true); e.Handled = true; }
+        else if (e.KeyCode == Keys.OemMinus || e.KeyCode == Keys.Subtract) { SetZoom(zoom / 1.1f, true); e.Handled = true; }
+        else if (e.KeyCode == Keys.D0 || e.KeyCode == Keys.NumPad0) { SetZoom(AutoZoom(Screen.FromControl(this)), false); e.Handled = true; }
+    }
+
+    // ---- DPI per monitor
+    [StructLayout(LayoutKind.Sequential)]
+    struct RECT { public int Left, Top, Right, Bottom; }
+    [StructLayout(LayoutKind.Sequential)]
+    struct POINTSTRUCT { public int X, Y; }
+    [DllImport("user32.dll")]
+    static extern IntPtr MonitorFromPoint(POINTSTRUCT pt, uint flags);
+    [DllImport("shcore.dll")]
+    static extern int GetDpiForMonitor(IntPtr hmon, int type, out uint dpiX, out uint dpiY);
+    const int WM_DPICHANGED = 0x02E0;
+
+    static int MonitorDpi(Screen scr)
+    {
+        try
+        {
+            POINTSTRUCT p = new POINTSTRUCT();
+            p.X = scr.Bounds.Left + scr.Bounds.Width / 2;
+            p.Y = scr.Bounds.Top + scr.Bounds.Height / 2;
+            uint x, y;
+            if (GetDpiForMonitor(MonitorFromPoint(p, 2), 0, out x, out y) == 0 && x > 0) return (int)x;
+        }
+        catch { }
+        try { using (Graphics g = Graphics.FromHwnd(IntPtr.Zero)) return (int)g.DpiX; }
+        catch { return 96; }
+    }
+
+    protected override void WndProc(ref Message m)
+    {
+        if (m.Msg == WM_DPICHANGED)
+        {
+            int nuovo = (int)(m.WParam.ToInt64() & 0xFFFF);
+            RECT r = (RECT)Marshal.PtrToStructure(m.LParam, typeof(RECT));
+            if (nuovo > 0 && nuovo != dpi && root != null)
+            {
+                dpi = nuovo;
+                Rebuild();
+                Location = new Point(r.Left, r.Top);
+                FitToScreen(Screen.FromPoint(new Point(r.Left + 1, r.Top + 1)), false);
+            }
+            m.Result = IntPtr.Zero;
+            return;
+        }
+        base.WndProc(ref m);
     }
 
     // Se l'avvio automatico lancia questo pannello ma la cartella e' stata
@@ -640,9 +899,9 @@ public class MainForm : Form
         l.Text = testo;
         l.AutoSize = true;
         l.BackColor = Color.Transparent;
-        l.Font = new Font("Segoe UI", 8.5f, attiva ? FontStyle.Bold : FontStyle.Regular);
+        l.Font = F(8.5f, attiva ? FontStyle.Bold : FontStyle.Regular);
         l.ForeColor = attiva ? Th.Accent : Th.Sub;
-        l.Margin = new Padding(codice == "it" ? 16 : 0, 11, 0, 0);
+        l.Margin = P(codice == "it" ? 16 : 0, 11, 0, 0);
         if (!attiva)
         {
             l.Cursor = Cursors.Hand;
@@ -672,17 +931,18 @@ public class MainForm : Form
     {
         Label h = new Label();
         h.Text = header;
-        h.Font = new Font("Segoe UI", 8f, FontStyle.Bold);
+        h.Font = F(8f, FontStyle.Bold);
         h.ForeColor = Th.Sub;
         h.AutoSize = true;
         h.BackColor = Color.Transparent;
-        h.Margin = new Padding(4, 0, 0, 6);
+        h.Margin = P(4, 0, 0, 6);
         parent.Controls.Add(h);
 
         Card card = new Card();
+        card.Sc = sc;
         card.AutoSize = true;
         card.AutoSizeMode = AutoSizeMode.GrowAndShrink;
-        card.Margin = new Padding(0, 0, 0, 12);
+        card.Margin = P(0, 0, 0, 12);
         parent.Controls.Add(card);
         cards.Add(card);
 
@@ -691,7 +951,7 @@ public class MainForm : Form
         t.AutoSize = true;
         t.AutoSizeMode = AutoSizeMode.GrowAndShrink;
         t.BackColor = Color.Transparent;
-        t.Padding = new Padding(14, 12, 18, 12);
+        t.Padding = P(14, 12, 18, 12);
         card.Controls.Add(t);
         return t;
     }
@@ -715,16 +975,16 @@ public class MainForm : Form
         k.ForeColor = Th.Sub;
         k.BackColor = Color.Transparent;
         k.AutoSize = true;
-        k.Margin = new Padding(0, 4, 26, 4);
-        k.MinimumSize = new Size(165, 0);
+        k.Margin = P(0, 4, 26, 4);
+        k.MinimumSize = new Size(S(165), 0);
 
         Label v = new Label();
-        v.Font = new Font("Segoe UI", 9.5f, FontStyle.Bold);
+        v.Font = F(9.5f, FontStyle.Bold);
         v.ForeColor = Th.Text;
         v.BackColor = Color.Transparent;
         v.AutoSize = true;
-        v.Margin = new Padding(0, 4, 0, 4);
-        v.MinimumSize = new Size(240, 0);
+        v.Margin = P(0, 4, 0, 4);
+        v.MinimumSize = new Size(S(240), 0);
 
         int r = t.RowCount;
         t.Controls.Add(k, 0, r);
@@ -741,7 +1001,7 @@ public class MainForm : Form
         f.AutoSize = true;
         f.AutoSizeMode = AutoSizeMode.GrowAndShrink;
         f.BackColor = Th.Bg;
-        f.Margin = new Padding(2, 0, 0, 8);
+        f.Margin = P(2, 0, 0, 8);
         parent.Controls.Add(f);
         return f;
     }
@@ -749,12 +1009,13 @@ public class MainForm : Form
     RoundButton AddButton(FlowLayoutPanel row, string text, EventHandler h, bool primary)
     {
         RoundButton b = new RoundButton();
+        b.Sc = sc;
         b.Text = text;
         b.Primary = primary;
         b.AutoSize = true;
         b.AutoSizeMode = AutoSizeMode.GrowAndShrink;
-        b.Padding = new Padding(16, 9, 16, 9);
-        b.Margin = new Padding(0, 0, 10, 0);
+        b.Padding = P(16, 9, 16, 9);
+        b.Margin = P(0, 0, 10, 0);
         b.Click += h;
         row.Controls.Add(b);
         return b;
@@ -1187,6 +1448,13 @@ public class MainForm : Form
             lblUpdate.Text = text;
             lblUpdate.ForeColor = c;
             EqualizeCards();
+            // un messaggio piu' lungo del previsto allarga la finestra invece di
+            // finire tagliato
+            if (!rebuilding && root != null)
+            {
+                Size pref = root.GetPreferredSize(Size.Empty);
+                if (pref.Width > ClientSize.Width || pref.Height > ClientSize.Height) ApplySize();
+            }
         });
     }
 
@@ -1522,6 +1790,19 @@ public class MainForm : Form
 
     [DllImport("user32.dll")]
     static extern bool SetProcessDPIAware();
+    [DllImport("user32.dll")]
+    static extern bool SetProcessDpiAwarenessContext(IntPtr ctx);
+    [DllImport("shcore.dll")]
+    static extern int SetProcessDpiAwareness(int value);
+
+    // DPI per monitor (v2 da Windows 10 1703): il pannello riceve WM_DPICHANGED
+    // e si ridisegna nitido su ogni schermo invece di essere stirato da Windows.
+    static void ImpostaDpiAwareness()
+    {
+        try { if (SetProcessDpiAwarenessContext((IntPtr)(-4))) return; } catch { }
+        try { if (SetProcessDpiAwareness(2) == 0) return; } catch { }
+        try { SetProcessDPIAware(); } catch { }
+    }
 
     static string HttpGet(string url)
     {
@@ -1785,7 +2066,7 @@ public class MainForm : Form
     [STAThread]
     public static void Main(string[] args)
     {
-        try { if (Environment.OSVersion.Version.Major >= 6) SetProcessDPIAware(); } catch { }
+        ImpostaDpiAwareness();
         Application.EnableVisualStyles();
         Application.SetCompatibleTextRenderingDefault(false);
 

@@ -4,7 +4,14 @@ No installer, no admin rights, nothing else to install. Decky Loader itself is d
 **Scarica `DeckyManager.exe` qui sotto**, aprilo e premi **Installa Decky**, poi riavvia Steam.
 Nessun installer, nessun permesso di amministratore, niente altro da installare. Decky Loader viene scaricato dalle sue release ufficiali su GitHub.
 
-### What's new / Novità (v1.2.0)
+### What's new / Novità (v1.2.1)
+
+- **Resizable window that fits your screen.** Drag any edge and the whole panel scales with it (the size is remembered); Ctrl + / Ctrl − / Ctrl 0 work too. On 1440p and 4K screens it opens larger, and it always stays inside the screen.
+  **Finestra ridimensionabile e adatta allo schermo.** Trascinando un bordo tutto il pannello si ridimensiona in proporzione (la misura viene ricordata); funzionano anche Ctrl + / Ctrl − / Ctrl 0. Su schermi 1440p e 4K si apre più grande e resta sempre dentro lo schermo.
+- **Sharp at every Windows scaling.** Per-monitor DPI awareness: no more blurry or mis-sized panel at 125–200 %, and it redraws itself when moved to a monitor with a different scale.
+  **Nitido con qualsiasi scala di Windows.** Gestione dei DPI per monitor: niente più pannello sfocato o di misura sbagliata al 125–200 %, e si ridisegna quando lo sposti su un monitor con una scala diversa.
+
+### v1.2.0
 
 - **Updates work again.** Decky is now downloaded from its official releases (v3.3.0+ ships Windows executables) instead of CI artifacts from a workflow upstream no longer runs. Each file is checked against GitHub's SHA-256 before anything is replaced.
   **Gli aggiornamenti funzionano di nuovo.** Decky ora si scarica dalle release ufficiali (da v3.3.0 includono gli exe per Windows) invece che dagli artefatti di un workflow che il progetto non usa più. Ogni file viene verificato con lo SHA-256 di GitHub prima di sostituire qualcosa.

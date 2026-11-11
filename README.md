@@ -8,7 +8,7 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 ![Windows 10/11](https://img.shields.io/badge/Windows-10%20%7C%2011-0078d4)
 
-A tiny (~60 KB) control panel that installs, runs and keeps **[Decky Loader](https://github.com/SteamDeckHomebrew/decky-loader)** — the Steam Deck plugin system — working inside **Steam Big Picture on Windows**.
+A tiny (~70 KB) control panel that installs, runs and keeps **[Decky Loader](https://github.com/SteamDeckHomebrew/decky-loader)** — the Steam Deck plugin system — working inside **Steam Big Picture on Windows**.
 
 No Python, no Node, no Git, no installer: a single `.exe` that does everything.
 
@@ -57,6 +57,11 @@ It never asks for administrator rights. The only exception is the CEF file when 
 * **Start minimised to the system tray** — at boot the panel itself starts hidden near the clock and launches the loader. Left-click the icon to open it; right-click for a menu. On Windows 11 new icons land in the *hidden icons* flyout under the `^` arrow: drag it onto the taskbar to keep it visible.
 * **Update Decky automatically when a new version is out** — on by default. On every launch, if a newer build exists it is downloaded and installed silently, with a notification on the tray icon. It never does this while a game is running.
 
+## Window size
+
+The panel adapts to your screen: on a 1440p or 4K monitor it opens larger, and it always fits inside the screen. It is DPI-aware per monitor, so it stays sharp at any Windows scaling and redraws itself when you drag it to a monitor with a different scale.
+
+To make it bigger or smaller, drag any edge of the window: the whole content scales with it and the size is remembered. **Ctrl +** and **Ctrl −** do the same from the keyboard, **Ctrl 0** goes back to the automatic size.
 ## How it works
 
 Steam's UI is a Chromium (CEF) application. With `.cef-enable-remote-debugging` present, Steam exposes a debugger on port **8080**. Decky's `PluginLoader.exe` connects to it, finds the `SharedJSContext` tab (the React UI behind Big Picture) and injects its frontend, served from a local web server on port **1337**. Decky Manager is simply the thing that sets all of this up and keeps it alive.
@@ -84,7 +89,7 @@ Automatic updates run at most once every 6 hours, never while a game is running,
 .\build.ps1
 ```
 
-Produces `DeckyManager.exe` (~60 KB) using the C# compiler that ships with Windows — no SDK, no NuGet, no Visual Studio.
+Produces `DeckyManager.exe` (~70 KB) using the C# compiler that ships with Windows — no SDK, no NuGet, no Visual Studio.
 
 ```powershell
 .\build.ps1 -Embed

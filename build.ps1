@@ -62,6 +62,7 @@ $cscArgs = @(
     "-win32icon:$icon"
     "-out:$Output"
     "-reference:$refs"
+    "-resource:$icon,appicon"   # icona a 64 px per il titolo nitido a ogni scala
 )
 
 if ($Embed) {
